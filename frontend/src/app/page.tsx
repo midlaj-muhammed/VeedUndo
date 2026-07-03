@@ -21,7 +21,8 @@ export default function Home() {
   useEffect(() => {
     setLoading(true);
     setError("");
-    let query = supabase.from("listings").select("*, sub_districts!inner(*, districts!inner(*))").in("status", ["active", "rented"]).or("status=active,and(status=rented,rented_at.gte." + new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()).order("created_at", { ascending: false }).limit(50);
+    const cutoffISO = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    let query = supabase.from("listings").select("*, sub_districts!inner(*, districts!inner(*))").or(`status.eq.active,and(status.eq.rented,rented_at.gte.${cutoffISO})`).order("created_at", { ascending: false }).limit(50);
     if (filters.subDistrictId) query = query.eq("sub_district_id", filters.subDistrictId);
     else if (filters.districtId) query = query.eq("sub_districts.district_id", filters.districtId);
     if (filters.houseType) query = query.eq("house_type", filters.houseType);
