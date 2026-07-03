@@ -1,0 +1,44 @@
+name: Keep Supabase Alive
+
+on:
+  schedule:
+    - cron: "0 0 */5 * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase REST endpoint
+        id: ping
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            "${SUPABASE_URL}/rest/v1/localities?select=id&limit=1" \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}")
+          echo "status=$STATUS" >> "$GITHUB_OUTPUT"
+          if [ "$STATUS" != "200" ]; then
+            echo "Ping returned HTTP $STATUS"
+            exit 1
+          fi
+          echo "Ping OK (HTTP $STATUS)"
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+
+      - name: Alert on failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const repo = context.repo.repo;
+            const owner = context.repo.owner;
+            const runUrl = `https://github.com/${owner}/${repo}/actions/runs/${context.runId}`;
+            await github.rest.issues.create({
+              owner,
+              repo,
+              title: 'CRITICAL: Supabase keep-alive ping failed',
+              body: `## Supabase keep-alive ping failed\n\nThe scheduled ping to Supabase REST endpoint returned a non-200 status.\n\n**This means Supabase may pause the free-tier project within 7 days.**\n\n- **Workflow run:** [View logs](${runUrl})\n- **Time:** ${new Date().toISOString()}\n\n### Action required\n1. Check if the Supabase project is paused\n2. Verify secrets (SUPABASE_URL, SUPABASE_ANON_KEY) are set correctly\n3. Manually unpause if needed at https://supabase.com/dashboard`,
+              labels: ['urgent', 'infra'],
+            });
+            core.setFailed('Keep-alive ping failed — issue created');
