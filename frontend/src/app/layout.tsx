@@ -1,17 +1,19 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Inter } from "next/font/google";
 import Link from "next/link";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+};
 
 export const metadata: Metadata = {
   title: "VeedUndo — Kerala Rental Board",
@@ -25,14 +27,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col">
+    <html lang="en" className={`${inter.variable} h-full antialiased`}>
+      <body className="min-h-dvh flex flex-col font-sans">
         {children}
-        <footer className="border-t border-[var(--color-border)] py-4 text-center text-xs text-[var(--color-text-muted)]">
-          VeedUndo — Kerala&apos;s hyperlocal rental board
+        <footer className="border-t border-[var(--color-border)] bg-[var(--color-surface)] py-6 mt-auto">
+          <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-[var(--color-text-muted)]">
+            <p>VeedUndo — Kerala&apos;s hyperlocal rental board</p>
+            <div className="flex gap-4">
+              <Link href="/" className="hover:text-[var(--color-primary)]">Browse</Link>
+              <Link href="/post" className="hover:text-[var(--color-primary)]">Post</Link>
+              <Link href="/dashboard" className="hover:text-[var(--color-primary)]">Dashboard</Link>
+            </div>
+          </div>
         </footer>
       </body>
     </html>
