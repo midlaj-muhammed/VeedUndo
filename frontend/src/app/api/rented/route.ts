@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
 
   const { error: updateError } = await adminSupabase
     .from("listings")
-    .update({ status: "rented" })
+    .update({ status: "rented", rented_at: new Date().toISOString() })
     .eq("id", listing_id)
     .eq("poster_email", user.email);
 
