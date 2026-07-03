@@ -3,50 +3,38 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
-import type { ListingWithLocality, Locality } from "@/lib/types";
+import type { ListingWithLocation, District } from "@/lib/types";
 import BrowseFilters from "@/components/BrowseFilters";
 import ListingCard, { ListingCardSkeleton } from "@/components/ListingCard";
-import ThemeToggle from "@/components/ThemeToggle";
 
 export default function Home() {
-  const [listings, setListings] = useState<ListingWithLocality[]>([]);
-  const [localities, setLocalities] = useState<Locality[]>([]);
+  const [listings, setListings] = useState<ListingWithLocation[]>([]);
+  const [districts, setDistricts] = useState<District[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [filters, setFilters] = useState({ localityId: "", rentRange: "", houseType: "", posterType: "" });
+  const [filters, setFilters] = useState({ districtId: "", subDistrictId: "", rentRange: "", houseType: "", posterType: "" });
 
   useEffect(() => {
-    supabase.from("localities").select("*").order("name").then(({ data }) => { if (data) setLocalities(data); });
+    supabase.from("districts").select("*").order("name").then(({ data }) => { if (data) setDistricts(data); });
   }, []);
 
   useEffect(() => {
     setLoading(true);
     setError("");
-    let query = supabase.from("listings").select("*, localities(*)").eq("status", "active").gte("expires_at", new Date().toISOString()).order("created_at", { ascending: false }).limit(50);
-    if (filters.localityId) query = query.eq("locality_id", filters.localityId);
+    let query = supabase.from("listings").select("*, sub_districts!inner(*, districts!inner(*))").in("status", ["active", "rented"]).gte("expires_at", new Date().toISOString()).order("created_at", { ascending: false }).limit(50);
+    if (filters.subDistrictId) query = query.eq("sub_district_id", filters.subDistrictId);
+    else if (filters.districtId) query = query.eq("sub_districts.district_id", filters.districtId);
     if (filters.houseType) query = query.eq("house_type", filters.houseType);
     if (filters.posterType) query = query.eq("poster_type", filters.posterType);
     if (filters.rentRange) { const [min, max] = filters.rentRange.split("-").map(Number); query = query.gte("rent_max", min).lte("rent_min", max); }
     query.then(({ data, error: err }) => {
-      if (err) { setError("Failed to load listings."); setListings([]); } else { setListings((data as ListingWithLocality[]) || []); }
+      if (err) { setError("Failed to load listings."); setListings([]); } else { setListings((data as ListingWithLocation[]) || []); }
       setLoading(false);
     });
   }, [filters]);
 
   return (
     <div className="flex flex-col min-h-dvh">
-      {/* Persistent nav bar */}
-      <nav className="border-b border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 sticky top-0 z-40">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <Link href="/" className="text-lg font-bold text-[var(--color-primary)]">VeedUndo</Link>
-          <div className="flex items-center gap-3">
-            <Link href="/dashboard" className="text-sm text-[var(--color-text-muted)] hover:text-[var(--color-primary)] hidden sm:block">My Listings</Link>
-            <Link href="/post" className="press-effect rounded-full bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--color-primary-dark)]">+ Post</Link>
-            <ThemeToggle />
-          </div>
-        </div>
-      </nav>
-
       {/* Hero */}
       <header className="hero-gradient border-b border-[var(--color-border)] bg-[var(--color-surface)]">
         <div className="max-w-6xl mx-auto px-4 py-12 sm:py-16 text-center">
@@ -64,7 +52,7 @@ export default function Home() {
       </header>
 
       <main id="listings" className="flex-1 max-w-6xl mx-auto w-full px-4 py-8">
-        <BrowseFilters localities={localities} filters={filters} onChange={setFilters} />
+        <BrowseFilters districts={districts} filters={filters} onChange={setFilters} />
         {loading ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{Array.from({ length: 6 }).map((_, i) => <ListingCardSkeleton key={i} />)}</div>
         ) : error ? (

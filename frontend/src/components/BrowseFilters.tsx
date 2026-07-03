@@ -1,17 +1,19 @@
 "use client";
 
-import type { Locality } from "@/lib/types";
+import { useState, useEffect } from "react";
+import type { District, SubDistrict } from "@/lib/types";
 import { HOUSE_TYPE_LABELS } from "@/lib/types";
 
 interface Filters {
-  localityId: string;
+  districtId: string;
+  subDistrictId: string;
   rentRange: string;
   houseType: string;
   posterType: string;
 }
 
 interface Props {
-  localities: Locality[];
+  districts: District[];
   filters: Filters;
   onChange: (f: Filters) => void;
 }
@@ -24,20 +26,37 @@ const RENT_RANGES = [
   { value: "20000-999999", label: "Above ₹20,000" },
 ];
 
-export default function BrowseFilters({ localities, filters, onChange }: Props) {
+export default function BrowseFilters({ districts, filters, onChange }: Props) {
+  const [subDistricts, setSubDistricts] = useState<SubDistrict[]>([]);
+
+  useEffect(() => {
+    if (!filters.districtId) { setSubDistricts([]); return; }
+    import("@/lib/supabase").then(({ supabase }) =>
+      supabase.from("sub_districts").select("*").eq("district_id", filters.districtId).order("name").then(({ data }) => { if (data) setSubDistricts(data); })
+    );
+  }, [filters.districtId]);
+
   function update(key: keyof Filters, value: string) {
-    onChange({ ...filters, [key]: value });
+    const next = { ...filters, [key]: value };
+    if (key === "districtId") next.subDistrictId = "";
+    onChange(next);
   }
 
-  const hasFilters = filters.localityId || filters.rentRange || filters.houseType || filters.posterType;
+  const hasFilters = filters.districtId || filters.subDistrictId || filters.rentRange || filters.houseType || filters.posterType;
 
   return (
     <div className="space-y-3 mb-6">
       <div className="flex flex-wrap gap-3">
-        <select value={filters.localityId} onChange={(e) => update("localityId", e.target.value)}
+        <select value={filters.districtId} onChange={(e) => update("districtId", e.target.value)}
           className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2.5 text-sm text-[var(--color-text)] cursor-pointer hover:border-[var(--color-primary-light)] focus:border-[var(--color-primary)]">
-          <option value="">All Localities</option>
-          {localities.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
+          <option value="">All Districts</option>
+          {districts.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+        </select>
+        <select value={filters.subDistrictId} onChange={(e) => update("subDistrictId", e.target.value)}
+          disabled={!filters.districtId}
+          className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2.5 text-sm text-[var(--color-text)] cursor-pointer hover:border-[var(--color-primary-light)] focus:border-[var(--color-primary)] disabled:opacity-50">
+          <option value="">{filters.districtId ? "All Sub-districts" : "Select district first"}</option>
+          {subDistricts.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
         </select>
         <select value={filters.rentRange} onChange={(e) => update("rentRange", e.target.value)}
           className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2.5 text-sm text-[var(--color-text)] cursor-pointer hover:border-[var(--color-primary-light)] focus:border-[var(--color-primary)]">
@@ -56,7 +75,7 @@ export default function BrowseFilters({ localities, filters, onChange }: Props) 
         </select>
       </div>
       {hasFilters && (
-        <button onClick={() => onChange({ localityId: "", rentRange: "", houseType: "", posterType: "" })}
+        <button onClick={() => onChange({ districtId: "", subDistrictId: "", rentRange: "", houseType: "", posterType: "" })}
           className="text-sm text-[var(--color-primary)] hover:text-[var(--color-primary-dark)] font-medium">
           Clear all filters
         </button>

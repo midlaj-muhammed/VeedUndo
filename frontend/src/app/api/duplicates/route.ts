@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
 export async function POST(request: NextRequest) {
-  const { locality_id, house_type, rent_min, rent_max } = await request.json();
+  const { sub_district_id, house_type, rent_min, rent_max } = await request.json();
 
   // Validate inputs
-  if (!locality_id || !house_type || typeof rent_min !== "number" || typeof rent_max !== "number") {
+  if (!sub_district_id || !house_type || typeof rent_min !== "number" || typeof rent_max !== "number") {
     return NextResponse.json({ error: "Invalid parameters" }, { status: 400 });
   }
   if (rent_min < 0 || rent_max < 0 || rent_min > 1000000 || rent_max > 1000000 || rent_min > rent_max) {
@@ -19,9 +19,9 @@ export async function POST(request: NextRequest) {
 
   const { data: matches, error } = await supabase
     .from("listings")
-    .select("id, rent_min, rent_max, locality_id, house_type")
+    .select("id, rent_min, rent_max, sub_district_id, house_type")
     .eq("status", "active")
-    .eq("locality_id", locality_id)
+    .eq("sub_district_id", sub_district_id)
     .eq("house_type", house_type)
     .gte("expires_at", new Date().toISOString())
     .or(`and(rent_min.lte.${rent_max},rent_max.gte.${rent_min})`);

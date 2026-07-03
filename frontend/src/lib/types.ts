@@ -1,13 +1,19 @@
-export interface Locality {
+export interface District {
   id: string;
   name: string;
-  city: string;
+  created_at: string;
+}
+
+export interface SubDistrict {
+  id: string;
+  district_id: string;
+  name: string;
   created_at: string;
 }
 
 export interface Listing {
   id: string;
-  locality_id: string;
+  sub_district_id: string;
   rent_min: number;
   rent_max: number;
   house_type: HouseType;
@@ -24,8 +30,8 @@ export interface Listing {
   flag_count: number;
 }
 
-export interface ListingWithLocality extends Listing {
-  localities: Locality;
+export interface ListingWithLocation extends Listing {
+  sub_districts: SubDistrict & { districts: District };
 }
 
 export type HouseType =
