@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 import type { ListingWithLocality, Locality } from "@/lib/types";
 import BrowseFilters from "@/components/BrowseFilters";
 import ListingCard, { ListingCardSkeleton } from "@/components/ListingCard";
+import ThemeToggle from "@/components/ThemeToggle";
 
 export default function Home() {
   const [listings, setListings] = useState<ListingWithLocality[]>([]);
@@ -20,13 +21,9 @@ export default function Home() {
   });
 
   useEffect(() => {
-    supabase
-      .from("localities")
-      .select("*")
-      .order("name")
-      .then(({ data }) => {
-        if (data) setLocalities(data);
-      });
+    supabase.from("localities").select("*").order("name").then(({ data }) => {
+      if (data) setLocalities(data);
+    });
   }, []);
 
   useEffect(() => {
@@ -49,67 +46,46 @@ export default function Home() {
     }
 
     query.then(({ data, error: err }) => {
-      if (err) {
-        setError("Failed to load listings.");
-        setListings([]);
-      } else {
-        setListings((data as ListingWithLocality[]) || []);
-      }
+      if (err) { setError("Failed to load listings."); setListings([]); }
+      else { setListings((data as ListingWithLocality[]) || []); }
       setLoading(false);
     });
   }, [filters]);
 
   return (
     <div className="flex flex-col min-h-dvh">
-      {/* Hero with gradient (inspired by gasundo.live) */}
-      <header className="hero-gradient border-b border-[var(--color-border)]">
-        <div className="max-w-6xl mx-auto px-4 py-16 sm:py-20 text-center">
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-[var(--color-text)] mb-4">
+      <header className="hero-gradient border-b border-[var(--color-border)] bg-[var(--color-surface)]">
+        <div className="max-w-6xl mx-auto px-4 py-12 sm:py-16 text-center relative">
+          <div className="absolute top-4 right-4">
+            <ThemeToggle />
+          </div>
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-[var(--color-text)] mb-3">
             <span className="text-[var(--color-primary)]">VeedUndo</span>
           </h1>
           <p className="text-lg sm:text-xl text-[var(--color-text-muted)] max-w-xl mx-auto mb-8">
             Kerala&apos;s hyperlocal rental board. Find houses for rent near you.
           </p>
           <div className="flex items-center justify-center gap-4">
-            <Link
-              href="/post"
-              className="press-effect rounded-full bg-[var(--color-primary)] px-6 py-3 text-sm font-medium text-white hover:bg-[var(--color-primary-dark)] shadow-lg shadow-[var(--color-primary)]/20"
-            >
+            <Link href="/post" className="press-effect rounded-full bg-[var(--color-primary)] px-6 py-3 text-sm font-medium text-white hover:bg-[var(--color-primary-dark)] shadow-lg shadow-[var(--color-primary)]/20">
               + Post a Listing
             </Link>
-            <a
-              href="#listings"
-              className="press-effect rounded-full border border-[var(--color-border)] px-6 py-3 text-sm font-medium text-[var(--color-text)] hover:border-[var(--color-primary-light)] hover:text-[var(--color-primary)]"
-            >
+            <a href="#listings" className="press-effect rounded-full border border-[var(--color-border)] px-6 py-3 text-sm font-medium text-[var(--color-text)] hover:border-[var(--color-primary-light)] hover:text-[var(--color-primary)]">
               Browse Listings
             </a>
           </div>
         </div>
       </header>
 
-      {/* Listings */}
       <main id="listings" className="flex-1 max-w-6xl mx-auto w-full px-4 py-8">
-        <BrowseFilters
-          localities={localities}
-          filters={filters}
-          onChange={setFilters}
-        />
-
+        <BrowseFilters localities={localities} filters={filters} onChange={setFilters} />
         {loading ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <ListingCardSkeleton key={i} />
-            ))}
+            {Array.from({ length: 6 }).map((_, i) => <ListingCardSkeleton key={i} />)}
           </div>
         ) : error ? (
           <div className="text-center py-16">
             <p className="text-[var(--color-destructive)] mb-2">{error}</p>
-            <button
-              onClick={() => window.location.reload()}
-              className="text-sm text-[var(--color-primary)] hover:underline"
-            >
-              Try again
-            </button>
+            <button onClick={() => window.location.reload()} className="text-sm text-[var(--color-primary)] hover:underline">Try again</button>
           </div>
         ) : listings.length === 0 ? (
           <div className="text-center py-16 bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)]">
@@ -117,25 +93,14 @@ export default function Home() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3h.008v.008h-.008V10.5zm0 3h.008v.008h-.008V13.5zm0 3h.008v.008h-.008V16.5z" />
             </svg>
             <p className="text-lg font-medium mb-1">No listings found</p>
-            <p className="text-sm text-[var(--color-text-muted)] mb-4">
-              Try different filters or be the first to post.
-            </p>
-            <Link
-              href="/post"
-              className="press-effect inline-block rounded-full bg-[var(--color-primary)] px-5 py-2.5 text-sm font-medium text-white hover:bg-[var(--color-primary-dark)]"
-            >
-              Post a Listing
-            </Link>
+            <p className="text-sm text-[var(--color-text-muted)] mb-4">Try different filters or be the first to post.</p>
+            <Link href="/post" className="press-effect inline-block rounded-full bg-[var(--color-primary)] px-5 py-2.5 text-sm font-medium text-white hover:bg-[var(--color-primary-dark)]">Post a Listing</Link>
           </div>
         ) : (
           <>
-            <p className="text-sm text-[var(--color-text-muted)] mb-4">
-              {listings.length} listing{listings.length !== 1 ? "s" : ""} found
-            </p>
+            <p className="text-sm text-[var(--color-text-muted)] mb-4">{listings.length} listing{listings.length !== 1 ? "s" : ""} found</p>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {listings.map((l) => (
-                <ListingCard key={l.id} listing={l} />
-              ))}
+              {listings.map((l) => <ListingCard key={l.id} listing={l} />)}
             </div>
           </>
         )}

@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase";
 import type { ListingWithLocality } from "@/lib/types";
 import { HOUSE_TYPE_LABELS } from "@/lib/types";
 import { daysLeft } from "@/lib/utils";
+import ThemeToggle from "@/components/ThemeToggle";
 
 export default function ListingDetail() {
   const { id } = useParams();
@@ -18,11 +19,7 @@ export default function ListingDetail() {
   const [selectedImg, setSelectedImg] = useState(0);
 
   useEffect(() => {
-    supabase
-      .from("listings")
-      .select("*, localities(*)")
-      .eq("id", id)
-      .single()
+    supabase.from("listings").select("*, localities(*)").eq("id", id).single()
       .then(({ data, error: err }) => {
         if (err) setError("Failed to load listing.");
         else setListing(data as ListingWithLocality);
@@ -42,12 +39,9 @@ export default function ListingDetail() {
   if (loading) {
     return (
       <div className="flex flex-col min-h-dvh">
-        <div className="border-b border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3"><div className="max-w-3xl mx-auto"><Link href="/" className="text-lg font-bold text-[var(--color-primary)]">VeedUndo</Link></div></div>
+        <div className="border-b border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3"><div className="max-w-3xl mx-auto flex items-center justify-between"><Link href="/" className="text-lg font-bold text-[var(--color-primary)]">VeedUndo</Link><ThemeToggle /></div></div>
         <div className="flex-1 max-w-3xl mx-auto w-full px-4 py-8 space-y-6">
-          <div className="skeleton h-64 sm:h-80 w-full rounded-2xl" />
-          <div className="skeleton h-8 w-48" />
-          <div className="skeleton h-4 w-32" />
-          <div className="skeleton h-20 w-full rounded-2xl" />
+          <div className="skeleton h-64 sm:h-80 w-full rounded-2xl" /><div className="skeleton h-8 w-48" /><div className="skeleton h-4 w-32" /><div className="skeleton h-20 w-full rounded-2xl" />
         </div>
       </div>
     );
@@ -73,6 +67,7 @@ export default function ListingDetail() {
           <Link href="/" className="text-lg font-bold text-[var(--color-primary)]">VeedUndo</Link>
           <span className="text-sm text-[var(--color-text-dim)]">/</span>
           <span className="text-sm text-[var(--color-text-muted)] truncate">{locality?.name}</span>
+          <div className="ml-auto"><ThemeToggle /></div>
         </div>
       </header>
       <main className="flex-1 max-w-3xl mx-auto w-full px-4 py-8">
@@ -90,27 +85,18 @@ export default function ListingDetail() {
             )}
           </div>
         )}
-
         <div className="flex items-start justify-between gap-4 mb-4">
           <div>
             <p className="text-sm text-[var(--color-text-muted)]">{locality?.name}, {locality?.city}</p>
-            <h1 className="text-3xl font-bold text-[var(--color-text)]">
-              ₹{listing.rent_min.toLocaleString("en-IN")}–{listing.rent_max.toLocaleString("en-IN")}
-              <span className="text-base font-normal text-[var(--color-text-muted)]"> /month</span>
-            </h1>
+            <h1 className="text-3xl font-bold text-[var(--color-text)]">₹{listing.rent_min.toLocaleString("en-IN")}–{listing.rent_max.toLocaleString("en-IN")}<span className="text-base font-normal text-[var(--color-text-muted)]"> /month</span></h1>
           </div>
-          <span className={`shrink-0 rounded-full px-3 py-1 text-sm font-medium ${days > 3 ? "bg-green-500/10 text-green-400" : days > 0 ? "bg-amber-500/10 text-amber-400" : "bg-red-500/10 text-red-400"}`}>
-            {days > 0 ? `${days}d left` : "Expired"}
-          </span>
+          <span className={`shrink-0 rounded-full px-3 py-1 text-sm font-medium ${days > 3 ? "bg-green-500/10 text-green-600 dark:text-green-400" : days > 0 ? "bg-amber-500/10 text-amber-600 dark:text-amber-400" : "bg-red-500/10 text-red-600 dark:text-red-400"}`}>{days > 0 ? `${days}d left` : "Expired"}</span>
         </div>
-
         <div className="flex flex-wrap gap-2 mb-6">
-          <span className="rounded-full bg-[var(--color-surface-raised)] px-3 py-1 text-sm font-medium text-[var(--color-text)]">{HOUSE_TYPE_LABELS[listing.house_type]}</span>
-          <span className={`rounded-full px-3 py-1 text-sm font-medium ${listing.poster_type === "owner" ? "bg-blue-500/10 text-blue-400" : "bg-purple-500/10 text-purple-400"}`}>{listing.poster_type === "owner" ? "Owner" : "Broker"}</span>
+          <span className="rounded-full bg-[var(--color-muted)] px-3 py-1 text-sm font-medium text-[var(--color-text)]">{HOUSE_TYPE_LABELS[listing.house_type]}</span>
+          <span className={`rounded-full px-3 py-1 text-sm font-medium ${listing.poster_type === "owner" ? "bg-blue-500/10 text-blue-600 dark:text-blue-400" : "bg-purple-500/10 text-purple-600 dark:text-purple-400"}`}>{listing.poster_type === "owner" ? "Owner" : "Broker"}</span>
         </div>
-
         {listing.description && <p className="text-[var(--color-text)] mb-6 whitespace-pre-wrap leading-relaxed">{listing.description}</p>}
-
         <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 mb-6">
           <h2 className="font-bold mb-4 text-lg text-[var(--color-text)]">Contact</h2>
           {listing.poster_whatsapp && (
@@ -127,7 +113,6 @@ export default function ListingDetail() {
           )}
           <p className="text-sm text-[var(--color-text-muted)] text-center">{listing.poster_email}</p>
         </div>
-
         <div className="text-center">
           {flagged ? <p className="text-sm text-[var(--color-text-muted)]">Thanks for reporting.</p> : (
             <button onClick={handleFlag} disabled={flagging} className="text-sm text-[var(--color-text-dim)] hover:text-[var(--color-destructive)] underline disabled:opacity-50 cursor-pointer">

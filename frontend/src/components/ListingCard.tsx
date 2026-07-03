@@ -38,7 +38,7 @@ export default function ListingCard({ listing }: { listing: ListingWithLocality 
           className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
         />
       ) : (
-        <div className="w-full h-48 bg-[var(--color-surface-raised)] flex items-center justify-center">
+        <div className="w-full h-48 bg-[var(--color-muted)] flex items-center justify-center">
           <svg className="w-12 h-12 text-[var(--color-text-dim)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3h.008v.008h-.008V10.5zm0 3h.008v.008h-.008V13.5zm0 3h.008v.008h-.008V16.5z" />
           </svg>
@@ -47,51 +47,21 @@ export default function ListingCard({ listing }: { listing: ListingWithLocality 
       <div className="p-4">
         <div className="flex items-start justify-between gap-2 mb-2">
           <div className="min-w-0">
-            <p className="text-xs text-[var(--color-text-muted)] truncate">
-              {locality?.name}, {locality?.city}
-            </p>
-            <h3 className="text-lg font-bold text-[var(--color-text)]">
-              ₹{listing.rent_min.toLocaleString("en-IN")}–
-              {listing.rent_max.toLocaleString("en-IN")}
-            </h3>
+            <p className="text-xs text-[var(--color-text-muted)] truncate">{locality?.name}, {locality?.city}</p>
+            <h3 className="text-lg font-bold text-[var(--color-text)]">₹{listing.rent_min.toLocaleString("en-IN")}–{listing.rent_max.toLocaleString("en-IN")}</h3>
           </div>
-          <span
-            className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${
-              days > 3
-                ? "bg-green-500/10 text-green-400"
-                : days > 0
-                ? "bg-amber-500/10 text-amber-400"
-                : "bg-red-500/10 text-red-400"
-            }`}
-          >
+          <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${days > 3 ? "bg-green-500/10 text-green-600 dark:text-green-400" : days > 0 ? "bg-amber-500/10 text-amber-600 dark:text-amber-400" : "bg-red-500/10 text-red-600 dark:text-red-400"}`}>
             {days > 0 ? `${days}d left` : "Expired"}
           </span>
         </div>
-
         <div className="flex flex-wrap gap-2 mb-2">
-          <span className="rounded-full bg-[var(--color-surface-raised)] px-2.5 py-0.5 text-xs font-medium text-[var(--color-text)]">
-            {HOUSE_TYPE_LABELS[listing.house_type]}
-          </span>
-          <span
-            className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
-              listing.poster_type === "owner"
-                ? "bg-blue-500/10 text-blue-400"
-                : "bg-purple-500/10 text-purple-400"
-            }`}
-          >
+          <span className="rounded-full bg-[var(--color-muted)] px-2.5 py-0.5 text-xs font-medium text-[var(--color-text)]">{HOUSE_TYPE_LABELS[listing.house_type]}</span>
+          <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${listing.poster_type === "owner" ? "bg-blue-500/10 text-blue-600 dark:text-blue-400" : "bg-purple-500/10 text-purple-600 dark:text-purple-400"}`}>
             {listing.poster_type === "owner" ? "Owner" : "Broker"}
           </span>
         </div>
-
-        {listing.description && (
-          <p className="text-sm text-[var(--color-text-muted)] line-clamp-2">
-            {listing.description}
-          </p>
-        )}
-
-        <p className="text-xs text-[var(--color-text-dim)] mt-2">
-          Posted {timeAgo(listing.created_at)}
-        </p>
+        {listing.description && <p className="text-sm text-[var(--color-text-muted)] line-clamp-2">{listing.description}</p>}
+        <p className="text-xs text-[var(--color-text-dim)] mt-2">Posted {timeAgo(listing.created_at)}</p>
       </div>
     </Link>
   );

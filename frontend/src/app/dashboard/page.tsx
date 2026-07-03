@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 import type { Listing } from "@/lib/types";
 import { HOUSE_TYPE_LABELS } from "@/lib/types";
 import { daysLeft } from "@/lib/utils";
+import ThemeToggle from "@/components/ThemeToggle";
 
 export default function Dashboard() {
   const [listings, setListings] = useState<Listing[]>([]);
@@ -60,6 +61,7 @@ export default function Dashboard() {
           <div className="flex items-center gap-3">
             <span className="text-xs text-[var(--color-text-muted)]">{session.user.email}</span>
             <button onClick={() => supabase.auth.signOut()} className="text-xs text-[var(--color-text-dim)] hover:text-[var(--color-destructive)]">Sign out</button>
+            <ThemeToggle />
           </div>
         </div>
       </header>
@@ -75,7 +77,7 @@ export default function Dashboard() {
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <p className="text-xs text-[var(--color-text-muted)]">{HOUSE_TYPE_LABELS[l.house_type]} — ₹{l.rent_min.toLocaleString("en-IN")}–{l.rent_max.toLocaleString("en-IN")}</p>
-                      <span className={`inline-block mt-1 rounded-full px-2 py-0.5 text-xs font-medium ${l.status === "active" ? "bg-green-500/10 text-green-400" : l.status === "expired" ? "bg-gray-500/10 text-gray-400" : l.status === "flagged" ? "bg-amber-500/10 text-amber-400" : "bg-blue-500/10 text-blue-400"}`}>
+                      <span className={`inline-block mt-1 rounded-full px-2 py-0.5 text-xs font-medium ${l.status === "active" ? "bg-green-500/10 text-green-600 dark:text-green-400" : l.status === "expired" ? "bg-gray-500/10 text-gray-600 dark:text-gray-400" : l.status === "flagged" ? "bg-amber-500/10 text-amber-600 dark:text-amber-400" : "bg-blue-500/10 text-blue-600 dark:text-blue-400"}`}>
                         {l.status}{l.status === "active" && ` — ${days}d left`}
                       </span>
                     </div>

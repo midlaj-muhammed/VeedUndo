@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import Link from "next/link";
 import "./globals.css";
+import { ThemeProvider } from "@/lib/theme-provider";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -27,19 +29,22 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} h-full antialiased dark`}>
-      <body className="min-h-dvh flex flex-col font-sans bg-[var(--color-bg)]">
-        {children}
-        <footer className="border-t border-[var(--color-border)] bg-[var(--color-surface)] py-6 mt-auto">
-          <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-[var(--color-text-muted)]">
-            <p>VeedUndo — Kerala&apos;s hyperlocal rental board</p>
-            <div className="flex gap-4">
-              <Link href="/" className="hover:text-[var(--color-primary)] transition-colors">Browse</Link>
-              <Link href="/post" className="hover:text-[var(--color-primary)] transition-colors">Post</Link>
-              <Link href="/dashboard" className="hover:text-[var(--color-primary)] transition-colors">Dashboard</Link>
+    <html lang="en" className={`${inter.variable} h-full antialiased`} suppressHydrationWarning>
+      <body className="min-h-dvh flex flex-col font-sans bg-[var(--color-bg)] text-[var(--color-text)]">
+        <ThemeProvider>
+          {children}
+          <footer className="border-t border-[var(--color-border)] bg-[var(--color-surface)] py-6 mt-auto">
+            <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-[var(--color-text-muted)]">
+              <p>VeedUndo — Kerala&apos;s hyperlocal rental board</p>
+              <div className="flex items-center gap-4">
+                <Link href="/" className="hover:text-[var(--color-primary)] transition-colors">Browse</Link>
+                <Link href="/post" className="hover:text-[var(--color-primary)] transition-colors">Post</Link>
+                <Link href="/dashboard" className="hover:text-[var(--color-primary)] transition-colors">Dashboard</Link>
+                <ThemeToggle />
+              </div>
             </div>
-          </div>
-        </footer>
+          </footer>
+        </ThemeProvider>
       </body>
     </html>
   );
