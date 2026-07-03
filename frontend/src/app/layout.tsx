@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import Link from "next/link";
 import "./globals.css";
 import { ThemeProvider } from "@/lib/theme-provider";
+import Navbar from "@/components/Navbar";
 import ThemeToggle from "@/components/ThemeToggle";
 
 const inter = Inter({
@@ -45,6 +46,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-dvh flex flex-col font-sans bg-[var(--color-bg)] text-[var(--color-text)]">
         <ThemeProvider>
+          <Navbar />
           {children}
           <footer className="border-t border-[var(--color-border)] bg-[var(--color-surface)] py-6 mt-auto">
             <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-[var(--color-text-muted)]">

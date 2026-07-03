@@ -3,8 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
-import ThemeToggle from "@/components/ThemeToggle";
-
 export default function AuthPage() {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
@@ -19,12 +17,6 @@ export default function AuthPage() {
 
   return (
     <div className="flex flex-col min-h-dvh">
-      <nav className="border-b border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 sticky top-0 z-40">
-        <div className="max-w-md mx-auto flex items-center justify-between">
-          <Link href="/" className="text-lg font-bold text-[var(--color-primary)]">VeedUndo</Link>
-          <ThemeToggle />
-        </div>
-      </nav>
       <main className="flex-1 flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-md bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] p-8">
           {sent ? (
