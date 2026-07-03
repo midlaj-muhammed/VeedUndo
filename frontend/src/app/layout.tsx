@@ -23,6 +23,16 @@ export const metadata: Metadata = {
     "Kerala's hyperlocal rental status board. Find houses for rent near you, fast.",
 };
 
+// Script to set theme before paint (no flash)
+const themeScript = `
+  (function() {
+    try {
+      var t = localStorage.getItem('veedundo-theme');
+      if (t === 'dark') document.documentElement.classList.add('dark');
+    } catch(e) {}
+  })();
+`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -30,6 +40,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${inter.variable} h-full antialiased`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body className="min-h-dvh flex flex-col font-sans bg-[var(--color-bg)] text-[var(--color-text)]">
         <ThemeProvider>
           {children}

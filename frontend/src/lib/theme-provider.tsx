@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useCallback, useState, useEffect } from "react";
 
 type Theme = "light" | "dark";
 
@@ -13,26 +13,36 @@ export function useTheme() {
   return useContext(ThemeContext);
 }
 
+function applyTheme(theme: Theme) {
+  if (typeof document === "undefined") return;
+  const root = document.documentElement;
+  if (theme === "dark") {
+    root.classList.add("dark");
+  } else {
+    root.classList.remove("dark");
+  }
+}
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>("light");
-  const [mounted, setMounted] = useState(false);
 
+  // Read stored theme after mount (client-only)
   useEffect(() => {
     const stored = localStorage.getItem("veedundo-theme") as Theme | null;
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    setTheme(stored || (prefersDark ? "dark" : "light"));
-    setMounted(true);
+    if (stored === "light" || stored === "dark") {
+      setTheme(stored);
+      applyTheme(stored);
+    }
   }, []);
 
-  useEffect(() => {
-    if (!mounted) return;
-    document.documentElement.classList.toggle("dark", theme === "dark");
-    localStorage.setItem("veedundo-theme", theme);
-  }, [theme, mounted]);
-
-  function toggle() {
-    setTheme((prev) => (prev === "light" ? "dark" : "light"));
-  }
+  const toggle = useCallback(() => {
+    setTheme((prev) => {
+      const next = prev === "light" ? "dark" : "light";
+      localStorage.setItem("veedundo-theme", next);
+      applyTheme(next);
+      return next;
+    });
+  }, []);
 
   return (
     <ThemeContext.Provider value={{ theme, toggle }}>
