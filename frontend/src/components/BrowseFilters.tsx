@@ -37,7 +37,7 @@ export default function BrowseFilters({ localities, filters, onChange }: Props) 
         <select
           value={filters.localityId}
           onChange={(e) => update("localityId", e.target.value)}
-          className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2.5 text-sm cursor-pointer hover:border-[var(--color-primary-light)] focus:border-[var(--color-primary)]"
+          className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2.5 text-sm text-[var(--color-text)] cursor-pointer hover:border-[var(--color-primary-light)] focus:border-[var(--color-primary)]"
         >
           <option value="">All Localities</option>
           {localities.map((l) => (
@@ -48,7 +48,7 @@ export default function BrowseFilters({ localities, filters, onChange }: Props) 
         <select
           value={filters.rentRange}
           onChange={(e) => update("rentRange", e.target.value)}
-          className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2.5 text-sm cursor-pointer hover:border-[var(--color-primary-light)] focus:border-[var(--color-primary)]"
+          className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2.5 text-sm text-[var(--color-text)] cursor-pointer hover:border-[var(--color-primary-light)] focus:border-[var(--color-primary)]"
         >
           {RENT_RANGES.map((r) => (
             <option key={r.value} value={r.value}>{r.label}</option>
@@ -58,7 +58,7 @@ export default function BrowseFilters({ localities, filters, onChange }: Props) 
         <select
           value={filters.houseType}
           onChange={(e) => update("houseType", e.target.value)}
-          className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2.5 text-sm cursor-pointer hover:border-[var(--color-primary-light)] focus:border-[var(--color-primary)]"
+          className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2.5 text-sm text-[var(--color-text)] cursor-pointer hover:border-[var(--color-primary-light)] focus:border-[var(--color-primary)]"
         >
           <option value="">Any Type</option>
           {Object.entries(HOUSE_TYPE_LABELS).map(([k, v]) => (
@@ -69,7 +69,7 @@ export default function BrowseFilters({ localities, filters, onChange }: Props) 
         <select
           value={filters.posterType}
           onChange={(e) => update("posterType", e.target.value)}
-          className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2.5 text-sm cursor-pointer hover:border-[var(--color-primary-light)] focus:border-[var(--color-primary)]"
+          className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2.5 text-sm text-[var(--color-text)] cursor-pointer hover:border-[var(--color-primary-light)] focus:border-[var(--color-primary)]"
         >
           <option value="">Any Poster</option>
           <option value="owner">Owner</option>
@@ -80,7 +80,7 @@ export default function BrowseFilters({ localities, filters, onChange }: Props) 
       {hasFilters && (
         <button
           onClick={() => onChange({ localityId: "", rentRange: "", houseType: "", posterType: "" })}
-          className="text-sm text-[var(--color-primary)] hover:text-[var(--color-primary-dark)] font-medium"
+          className="text-sm text-[var(--color-primary)] hover:text-[var(--color-primary-light)] font-medium"
         >
           Clear all filters
         </button>

@@ -28,7 +28,7 @@ export default function ListingCard({ listing }: { listing: ListingWithLocality 
   return (
     <Link
       href={`/listing/${listing.id}`}
-      className="group block rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] overflow-hidden hover:shadow-lg hover:border-[var(--color-primary-light)] transition-all duration-200"
+      className="group block rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] overflow-hidden hover:shadow-lg hover:shadow-[var(--color-primary)]/10 hover:border-[var(--color-primary-light)] transition-all duration-200 press-effect"
     >
       {listing.image_urls?.[0] ? (
         <img
@@ -38,8 +38,8 @@ export default function ListingCard({ listing }: { listing: ListingWithLocality 
           className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
         />
       ) : (
-        <div className="w-full h-48 bg-[var(--color-muted)] flex items-center justify-center">
-          <svg className="w-12 h-12 text-[var(--color-text-muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="w-full h-48 bg-[var(--color-surface-raised)] flex items-center justify-center">
+          <svg className="w-12 h-12 text-[var(--color-text-dim)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3h.008v.008h-.008V10.5zm0 3h.008v.008h-.008V13.5zm0 3h.008v.008h-.008V16.5z" />
           </svg>
         </div>
@@ -58,10 +58,10 @@ export default function ListingCard({ listing }: { listing: ListingWithLocality 
           <span
             className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${
               days > 3
-                ? "bg-green-50 text-green-700"
+                ? "bg-green-500/10 text-green-400"
                 : days > 0
-                ? "bg-amber-50 text-amber-700"
-                : "bg-red-50 text-red-700"
+                ? "bg-amber-500/10 text-amber-400"
+                : "bg-red-500/10 text-red-400"
             }`}
           >
             {days > 0 ? `${days}d left` : "Expired"}
@@ -69,14 +69,14 @@ export default function ListingCard({ listing }: { listing: ListingWithLocality 
         </div>
 
         <div className="flex flex-wrap gap-2 mb-2">
-          <span className="rounded-full bg-[var(--color-muted)] px-2.5 py-0.5 text-xs font-medium text-[var(--color-text)]">
+          <span className="rounded-full bg-[var(--color-surface-raised)] px-2.5 py-0.5 text-xs font-medium text-[var(--color-text)]">
             {HOUSE_TYPE_LABELS[listing.house_type]}
           </span>
           <span
             className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
               listing.poster_type === "owner"
-                ? "bg-blue-50 text-blue-700"
-                : "bg-purple-50 text-purple-700"
+                ? "bg-blue-500/10 text-blue-400"
+                : "bg-purple-500/10 text-purple-400"
             }`}
           >
             {listing.poster_type === "owner" ? "Owner" : "Broker"}
@@ -89,7 +89,7 @@ export default function ListingCard({ listing }: { listing: ListingWithLocality 
           </p>
         )}
 
-        <p className="text-xs text-[var(--color-text-muted)] mt-2">
+        <p className="text-xs text-[var(--color-text-dim)] mt-2">
           Posted {timeAgo(listing.created_at)}
         </p>
       </div>

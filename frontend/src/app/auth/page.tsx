@@ -33,15 +33,15 @@ export default function AuthPage() {
         </div>
       </header>
       <main className="flex-1 flex items-center justify-center px-4 py-12">
-        <div className="w-full max-w-md bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] p-8 shadow-sm">
+        <div className="w-full max-w-md bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] p-8">
           {sent ? (
             <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-50 flex items-center justify-center">
-                <svg className="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-500/10 flex items-center justify-center">
+                <svg className="w-8 h-8 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <h1 className="text-2xl font-bold mb-2">Check your email</h1>
+              <h1 className="text-2xl font-bold mb-2 text-[var(--color-text)]">Check your email</h1>
               <p className="text-[var(--color-text-muted)] mb-6">
                 We sent a sign-in link to <strong>{email}</strong>
               </p>
@@ -54,18 +54,18 @@ export default function AuthPage() {
             </div>
           ) : (
             <>
-              <h1 className="text-2xl font-bold mb-2">Sign in</h1>
+              <h1 className="text-2xl font-bold mb-2 text-[var(--color-text)]">Sign in</h1>
               <p className="text-[var(--color-text-muted)] mb-6">
                 We&apos;ll send you a magic link — no password needed.
               </p>
               {error && (
-                <div className="mb-4 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+                <div className="mb-4 rounded-lg bg-red-500/10 border border-red-500/20 px-4 py-3 text-sm text-red-400">
                   {error}
                 </div>
               )}
               <form onSubmit={handleSignIn} className="flex flex-col gap-4">
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium mb-1.5">Email address</label>
+                  <label htmlFor="email" className="block text-sm font-medium mb-1.5 text-[var(--color-text)]">Email address</label>
                   <input
                     id="email"
                     type="email"
@@ -73,13 +73,13 @@ export default function AuthPage() {
                     placeholder="you@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 text-sm focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/20"
+                    className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 text-sm text-[var(--color-text)] focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/20"
                   />
                 </div>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full rounded-full bg-[var(--color-primary)] px-5 py-3 text-sm font-medium text-white hover:bg-[var(--color-primary-dark)] transition-colors disabled:opacity-50 cursor-pointer"
+                  className="w-full rounded-full bg-[var(--color-primary)] px-5 py-3 text-sm font-medium text-white hover:bg-[var(--color-primary-dark)] transition-colors disabled:opacity-50 cursor-pointer press-effect"
                 >
                   {loading ? (
                     <span className="flex items-center justify-center gap-2">
