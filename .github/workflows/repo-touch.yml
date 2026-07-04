@@ -1,4 +1,4 @@
-name: Keep Repo Active
+name: Repo Touch
 
 on:
   workflow_dispatch:
