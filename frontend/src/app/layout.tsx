@@ -1,14 +1,29 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Plus_Jakarta_Sans, Newsreader, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import "./globals.css";
 import { ThemeProvider } from "@/lib/theme-provider";
-import Navbar from "@/components/Navbar";
-import ThemeToggle from "@/components/ThemeToggle";
+import { cn } from "@/lib/utils";
+import { Logo } from "@/components/Logo";
 
-const inter = Inter({
-  variable: "--font-inter",
+const plusJakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
+  variable: "--font-sans",
+  display: "swap",
+  weight: ["400", "500", "600", "700"],
+});
+
+const newsreader = Newsreader({
+  subsets: ["latin"],
+  variable: "--font-serif",
+  display: "swap",
+  style: ["normal", "italic"],
+  weight: ["400", "500", "600"],
+});
+
+const geistMono = Geist_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
   display: "swap",
 });
 
@@ -19,9 +34,12 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "VeedUndo — Kerala Rental Board",
+  title: "VeedUndo - Kerala Rental Board",
   description:
     "Kerala's hyperlocal rental status board. Find houses for rent near you, fast.",
+  icons: {
+    icon: "/favicon.svg",
+  },
 };
 
 // Script to set theme before paint (no flash)
@@ -40,22 +58,28 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} h-full antialiased`} suppressHydrationWarning>
+    <html lang="en" className={cn("h-full", "antialiased", plusJakarta.variable, "font-sans", newsreader.variable, geistMono.variable)} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
-      <body className="min-h-dvh flex flex-col font-sans bg-[var(--color-bg)] text-[var(--color-text)]">
+      <body className="min-h-dvh flex flex-col font-sans bg-[var(--color-bg)] text-[var(--color-text)] pb-20 sm:pb-0">
         <ThemeProvider>
-          <Navbar />
           {children}
-          <footer className="border-t border-[var(--color-border)] bg-[var(--color-surface)] py-6 mt-auto">
-            <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-[var(--color-text-muted)]">
-              <p>VeedUndo — Kerala&apos;s hyperlocal rental board</p>
-              <div className="flex items-center gap-4">
-                <Link href="/" className="hover:text-[var(--color-primary)] transition-colors">Browse</Link>
-                <Link href="/post" className="hover:text-[var(--color-primary)] transition-colors">Post</Link>
-                <Link href="/dashboard" className="hover:text-[var(--color-primary)] transition-colors">Dashboard</Link>
-                <ThemeToggle />
+          <footer className="hidden sm:block border-t border-[var(--color-border)] bg-[var(--color-muted)] mt-auto">
+            <div className="max-w-5xl mx-auto px-6 py-12">
+              <div className="flex flex-col sm:flex-row items-start justify-between gap-8">
+                <div className="flex flex-col gap-3">
+                  <Logo size="large" />
+                  <p className="text-sm text-[var(--color-text-muted)] max-w-xs leading-relaxed">Kerala&apos;s hyperlocal rental board.</p>
+                </div>
+                <div className="flex items-center gap-6 text-sm text-[var(--color-text-muted)]">
+                  <Link href="/" className="hover:text-[var(--color-text)] transition-colors duration-200">Browse</Link>
+                  <Link href="/post" className="hover:text-[var(--color-text)] transition-colors duration-200">Post</Link>
+                  <Link href="/dashboard" className="hover:text-[var(--color-text)] transition-colors duration-200">Dashboard</Link>
+                </div>
+              </div>
+              <div className="mt-8 pt-6 border-t border-[var(--color-border)] text-xs text-[var(--color-text-dim)]">
+                &copy; {new Date().getFullYear()} VeedUndo
               </div>
             </div>
           </footer>

@@ -6,13 +6,17 @@ import { supabase } from "@/lib/supabase";
 import type { ListingWithLocation, District } from "@/lib/types";
 import BrowseFilters from "@/components/BrowseFilters";
 import ListingCard, { ListingCardSkeleton } from "@/components/ListingCard";
+import Navbar from "@/components/Navbar";
 
 export default function Home() {
   const [listings, setListings] = useState<ListingWithLocation[]>([]);
   const [districts, setDistricts] = useState<District[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState("");
-  const [filters, setFilters] = useState({ districtId: "", subDistrictId: "", rentRange: "", houseType: "", posterType: "" });
+  const [filters, setFilters] = useState({ districtId: "", subDistrictId: "", rentRange: "", houseType: "", posterType: "", search: "", sort: "" });
+  const PAGE_SIZE = 20;
 
   useEffect(() => {
     supabase.from("districts").select("*").order("name").then(({ data }) => { if (data) setDistricts(data); });
@@ -21,38 +25,62 @@ export default function Home() {
   useEffect(() => {
     setLoading(true);
     setError("");
+    setHasMore(true);
+    fetchListings(0);
+  }, [filters]);
+
+  async function fetchListings(offset: number) {
     const cutoffISO = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-    let query = supabase.from("listings").select("*, sub_districts!inner(*, districts!inner(*))").or(`status.eq.active,and(status.eq.rented,rented_at.gte.${cutoffISO})`).order("created_at", { ascending: false }).limit(50);
+    let query = supabase.from("listings").select("*, sub_districts!inner(*, districts!inner(*))").or(`status.eq.active,and(status.eq.rented,rented_at.gte.${cutoffISO})`);
     if (filters.subDistrictId) query = query.eq("sub_district_id", filters.subDistrictId);
     else if (filters.districtId) query = query.eq("sub_districts.district_id", filters.districtId);
     if (filters.houseType) query = query.eq("house_type", filters.houseType);
     if (filters.posterType) query = query.eq("poster_type", filters.posterType);
     if (filters.rentRange) { const [min, max] = filters.rentRange.split("-").map(Number); query = query.gte("rent_max", min).lte("rent_min", max); }
-    query.then(({ data, error: err }) => {
-      if (err) { setError("Failed to load listings."); setListings([]); } else { setListings((data as ListingWithLocation[]) || []); }
-      setLoading(false);
-    });
-  }, [filters]);
+    if (filters.search) query = query.ilike("description", `%${filters.search}%`);
+    const sortCol = filters.sort === "price_asc" || filters.sort === "price_desc" ? "rent_min" : "created_at";
+    query = query.order(sortCol, { ascending: filters.sort === "price_asc" });
+    query = query.range(offset, offset + PAGE_SIZE - 1);
+    const { data, error: err } = await query;
+    if (err) { setError("Failed to load listings."); setListings([]); }
+    else {
+      const rows = (data as ListingWithLocation[]) || [];
+      setListings(offset === 0 ? rows : (prev) => [...prev, ...rows]);
+      setHasMore(rows.length === PAGE_SIZE);
+    }
+    setLoading(false);
+    setLoadingMore(false);
+  }
 
   return (
     <div className="flex flex-col min-h-dvh">
-      {/* Hero */}
-      <header className="hero-gradient border-b border-[var(--color-border)] bg-[var(--color-surface)]">
-        <div className="max-w-6xl mx-auto px-4 py-12 sm:py-16 text-center">
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-[var(--color-text)] mb-3">
-            <span className="text-[var(--color-primary)]">VeedUndo</span>
-          </h1>
-          <p className="text-lg sm:text-xl text-[var(--color-text-muted)] max-w-xl mx-auto mb-8">
-            Kerala&apos;s hyperlocal rental board. Find houses for rent near you.
-          </p>
-          <div className="flex items-center justify-center gap-4">
-            <Link href="/post" className="press-effect rounded-full bg-[var(--color-primary)] px-6 py-3 text-sm font-medium text-white hover:bg-[var(--color-primary-dark)] shadow-lg shadow-[var(--color-primary)]/20">+ Post a Listing</Link>
-            <a href="#listings" className="press-effect rounded-full border border-[var(--color-border)] px-6 py-3 text-sm font-medium text-[var(--color-text)] hover:border-[var(--color-primary-light)] hover:text-[var(--color-primary)]">Browse Listings</a>
+      <Navbar />
+      {/* Hero — Editorial Luxury, macro-whitespace */}
+      <header className="hero-gradient">
+        <div className="max-w-5xl mx-auto px-6 pt-20 pb-24 sm:pt-28 sm:pb-32 lg:pt-36 lg:pb-40">
+          <div className="max-w-3xl">
+            <p className="text-[11px] font-semibold tracking-[0.25em] uppercase text-[var(--color-primary)] mb-6">Kerala Rental Board</p>
+            <h1 className="text-5xl sm:text-6xl lg:text-[5.5rem] font-bold text-[var(--color-text)] mb-6 leading-[0.9] tracking-[-0.03em]">
+              Find your next
+              <br />
+              <span style={{ fontFamily: "var(--font-serif)" }} className="italic font-normal leading-[1.05] text-[var(--color-primary)]">home.</span>
+            </h1>
+            <p className="text-lg sm:text-xl text-[var(--color-text-muted)] max-w-lg mb-10 leading-relaxed">
+              Browse houses, apartments, and rooms for rent across Kerala. Direct from owners.
+            </p>
+            <div className="flex items-center gap-4">
+              <Link href="/post" className="press-effect btn btn-primary text-[15px] px-7 py-3">
+                Post a Listing
+              </Link>
+              <a href="#listings" className="press-effect btn btn-secondary text-[15px] px-7 py-3">
+                Browse
+              </a>
+            </div>
           </div>
         </div>
       </header>
 
-      <main id="listings" className="flex-1 max-w-6xl mx-auto w-full px-4 py-8">
+      <main id="listings" className="flex-1 max-w-5xl mx-auto w-full px-6 py-16 sm:py-24">
         <BrowseFilters districts={districts} filters={filters} onChange={setFilters} />
         {loading ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{Array.from({ length: 6 }).map((_, i) => <ListingCardSkeleton key={i} />)}</div>
@@ -63,12 +91,23 @@ export default function Home() {
             <svg className="w-16 h-16 mx-auto mb-4 text-[var(--color-text-dim)]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3h.008v.008h-.008V10.5zm0 3h.008v.008h-.008V13.5zm0 3h.008v.008h-.008V16.5z" /></svg>
             <p className="text-lg font-medium mb-1">No listings found</p>
             <p className="text-sm text-[var(--color-text-muted)] mb-4">Try different filters or be the first to post.</p>
-            <Link href="/post" className="press-effect inline-block rounded-full bg-[var(--color-primary)] px-5 py-2.5 text-sm font-medium text-white hover:bg-[var(--color-primary-dark)] min-h-[44px]">Post a Listing</Link>
+            <Link href="/post" className="press-effect inline-block rounded-md bg-[var(--color-primary)] px-5 py-2.5 text-sm font-medium text-white hover:bg-[var(--color-primary-dark)] min-h-[44px]">Post a Listing</Link>
           </div>
         ) : (
           <>
             <p className="text-sm text-[var(--color-text-muted)] mb-4">{listings.length} listing{listings.length !== 1 ? "s" : ""} found</p>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{listings.map((l) => <ListingCard key={l.id} listing={l} />)}</div>
+            {hasMore && (
+              <div className="flex justify-center mt-6">
+                <button
+                  onClick={() => { setLoadingMore(true); fetchListings(listings.length); }}
+                  disabled={loadingMore}
+                  className="rounded-full border border-[var(--color-border)] px-6 py-2.5 text-sm font-medium text-[var(--color-text)] hover:border-[var(--color-primary-light)] hover:text-[var(--color-primary)] transition-colors disabled:opacity-50 min-h-[40px]"
+                >
+                  {loadingMore ? "Loading..." : "Load more"}
+                </button>
+              </div>
+            )}
           </>
         )}
       </main>

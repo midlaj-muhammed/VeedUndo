@@ -17,6 +17,7 @@ export default function ImageLightbox({ images, alt, initialIndex = 0, onClose }
   const dragStart = useRef({ x: 0, y: 0 });
   const offsetStart = useRef({ x: 0, y: 0 });
   const lastTouchDist = useRef(0);
+  const swipeStart = useRef({ x: 0, y: 0 });
 
   const clampScale = (s: number) => Math.min(Math.max(s, 1), 4);
 
@@ -49,6 +50,9 @@ export default function ImageLightbox({ images, alt, initialIndex = 0, onClose }
   }
 
   function onTouchStart(e: React.TouchEvent) {
+    if (e.touches.length === 1) {
+      swipeStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    }
     if (e.touches.length === 2) {
       const dx = e.touches[0].clientX - e.touches[1].clientX;
       const dy = e.touches[0].clientY - e.touches[1].clientY;
@@ -79,7 +83,16 @@ export default function ImageLightbox({ images, alt, initialIndex = 0, onClose }
 
   function onTouchEnd(e: React.TouchEvent) {
     if (e.touches.length === 0) {
-      if (scale <= 1) resetTransform();
+      if (scale <= 1) {
+        const dx = e.changedTouches[0].clientX - swipeStart.current.x;
+        const dy = e.changedTouches[0].clientY - swipeStart.current.y;
+        if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
+          if (dx < 0) goNext();
+          else goPrev();
+        } else {
+          resetTransform();
+        }
+      }
       lastTouchDist.current = 0;
     }
   }
@@ -120,9 +133,9 @@ export default function ImageLightbox({ images, alt, initialIndex = 0, onClose }
       <div className="flex items-center justify-between px-4 py-3">
         <span className="text-sm text-white/70">{current + 1} / {images.length}</span>
         <div className="flex items-center gap-3">
-          <button onClick={() => setScale((s) => clampScale(s + 0.5))} className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white text-lg cursor-pointer">+</button>
-          <button onClick={() => setScale((s) => clampScale(s - 0.5))} className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white text-lg cursor-pointer">-</button>
-          <button onClick={onClose} className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white text-lg cursor-pointer">
+          <button aria-label="Zoom in" onClick={() => setScale((s) => clampScale(s + 0.5))} className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white text-lg cursor-pointer">+</button>
+          <button aria-label="Zoom out" onClick={() => setScale((s) => clampScale(s - 0.5))} className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white text-lg cursor-pointer">-</button>
+          <button aria-label="Close lightbox" onClick={onClose} className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white text-lg cursor-pointer">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         </div>

@@ -1,7 +1,17 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-/* Light theme (default) */
+@custom-variant dark (&:is(.dark *));
+
+/* ═══════════════════════════════════════════════════════════════
+   Premium Utilitarian Minimalism — Warm Editorial
+   Palette: Off-black text, warm bone canvas, ultra-light borders
+   Typography: Plus Jakarta Sans (UI) + Newsreader (editorial)
+   ═══════════════════════════════════════════════════════════════ */
+
 :root {
+  /* --- Core Palette --- */
   --color-primary: #EA580C;
   --color-primary-light: #F97316;
   --color-primary-dark: #C2410C;
@@ -15,9 +25,59 @@
   --color-muted: #FDF4F0;
   --color-destructive: #DC2626;
   --color-success: #10B981;
+
+  /* --- Muted Pastel Accents --- */
+  --pastel-red: #FDEBEC;
+  --pastel-red-text: #9F2F2D;
+  --pastel-blue: #E1F3FE;
+  --pastel-blue-text: #1F6C9F;
+  --pastel-green: #EDF3EC;
+  --pastel-green-text: #346538;
+  --pastel-yellow: #FBF3DB;
+  --pastel-yellow-text: #956400;
+
+  /* --- Ultra-diffuse shadows (hardly visible) --- */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.03);
+  --shadow-md: 0 2px 8px rgba(0,0,0,0.04);
+  --shadow-lg: 0 4px 16px rgba(0,0,0,0.05);
+  --shadow-xl: 0 8px 32px rgba(0,0,0,0.06);
+
+  /* --- shadcn tokens --- */
+  --background: #FFF7ED;
+  --foreground: #0F172A;
+  --card: #FFFFFF;
+  --card-foreground: #0F172A;
+  --popover: #FFFFFF;
+  --popover-foreground: #0F172A;
+  --primary: #EA580C;
+  --primary-foreground: #FFFFFF;
+  --secondary: #FDF4F0;
+  --secondary-foreground: #0F172A;
+  --muted: #FDF4F0;
+  --muted-foreground: #64748B;
+  --accent: #2563EB;
+  --accent-foreground: #FFFFFF;
+  --destructive: #DC2626;
+  --border: #FCEAE1;
+  --input: #FCEAE1;
+  --ring: #EA580C;
+  --chart-1: #EA580C;
+  --chart-2: #2563EB;
+  --chart-3: #10B981;
+  --chart-4: #EAB308;
+  --chart-5: #9333EA;
+  --radius: 0.5rem;
+  --sidebar: #F7F6F3;
+  --sidebar-foreground: #111111;
+  --sidebar-primary: #111111;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #F7F6F3;
+  --sidebar-accent-foreground: #111111;
+  --sidebar-border: #EAEAEA;
+  --sidebar-ring: #111111;
 }
 
-/* Dark theme */
+/* Dark theme — blueish black */
 .dark {
   --color-primary: #F97316;
   --color-primary-light: #FB923C;
@@ -31,56 +91,304 @@
   --color-text-dim: #94A3B8;
   --color-border: #334155;
   --color-muted: #1E293B;
-  --color-destructive: #EF4444;
-  --color-success: #34D399;
+  --color-destructive: #FCA5A5;
+  --color-success: #86EFAC;
+
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+  --shadow-md: 0 2px 8px rgba(0,0,0,0.35);
+  --shadow-lg: 0 4px 16px rgba(0,0,0,0.4);
+  --shadow-xl: 0 8px 32px rgba(0,0,0,0.45);
+
+  --background: #0F172A;
+  --foreground: #F8FAFC;
+  --card: #1E293B;
+  --card-foreground: #F8FAFC;
+  --popover: #1E293B;
+  --popover-foreground: #F8FAFC;
+  --primary: #F97316;
+  --primary-foreground: #FFFFFF;
+  --secondary: #334155;
+  --secondary-foreground: #F8FAFC;
+  --muted: #1E293B;
+  --muted-foreground: #CBD5E1;
+  --accent: #60A5FA;
+  --accent-foreground: #0F172A;
+  --destructive: #FCA5A5;
+  --border: #334155;
+  --input: #334155;
+  --ring: #F97316;
+  --chart-1: #F97316;
+  --chart-2: #60A5FA;
+  --chart-3: #34D399;
+  --chart-4: #FBBF24;
+  --chart-5: #A78BFA;
+  --sidebar: #1E293B;
+  --sidebar-foreground: #F8FAFC;
+  --sidebar-primary: #F97316;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #334155;
+  --sidebar-accent-foreground: #F8FAFC;
+  --sidebar-border: #334155;
+  --sidebar-ring: #F97316;
 }
 
+/* ─── Base ─── */
 body {
   color: var(--color-text);
   background: var(--color-bg);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-variant-numeric: tabular-nums;
 }
 
-a, button, select, input, textarea {
-  transition: color 150ms ease-out, background-color 150ms ease-out, border-color 150ms ease-out, opacity 150ms ease-out, box-shadow 150ms ease-out;
-}
+/* Smooth scroll */
+html { scroll-behavior: smooth; }
 
+/* Focus ring — subtle, not garish */
 a:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
+  border-radius: 4px;
 }
 
+/* Global transitions — specific properties only */
+a, button, select, input, textarea {
+  transition: color 150ms ease-out, background-color 150ms ease-out, border-color 150ms ease-out, opacity 150ms ease-out, box-shadow 150ms ease-out, transform 150ms ease-out;
+}
+
+/* ─── Skeleton Loading ─── */
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
 }
-
 .dark .skeleton {
-  background: linear-gradient(90deg, #1E293B 25%, #334155 50%, #1E293B 75%);
+  background: linear-gradient(90deg, #1C1917 25%, #292524 50%, #1C1917 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
-  border-radius: 0.75rem;
+  border-radius: 0.5rem;
 }
-
 .skeleton {
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background: linear-gradient(90deg, #FFF7ED 25%, #FED7AA 50%, #FFF7ED 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
-  border-radius: 0.75rem;
+  border-radius: 0.5rem;
 }
 
+/* ─── Press Effect ─── */
 .press-effect { transition: transform 100ms ease-out; }
 .press-effect:active { transform: scale(0.97); }
 
-.dark .hero-gradient {
-  background: linear-gradient(180deg, rgba(249, 115, 22, 0.08) 0%, rgba(15, 23, 42, 0) 60%);
+/* ─── Card System — Double-Bezel Architecture ─── */
+.card-base {
+  background: color-mix(in srgb, var(--color-surface) 60%, var(--color-bg));
+  border: 1px solid color-mix(in srgb, var(--color-border) 50%, transparent);
+  border-radius: 1rem;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), 0 1px 3px rgba(0,0,0,0.04);
+  transition: box-shadow 300ms cubic-bezier(0.16, 1, 0.3, 1), border-color 300ms cubic-bezier(0.16, 1, 0.3, 1), transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+@media (hover: hover) and (pointer: fine) {
+  .card-base:hover {
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), 0 4px 20px rgba(0,0,0,0.08);
+    border-color: color-mix(in srgb, var(--color-primary) 20%, var(--color-border));
+    transform: translateY(-2px);
+  }
+}
+.dark .card-base {
+  background: color-mix(in srgb, var(--color-surface) 70%, var(--color-bg));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 1px 3px rgba(0,0,0,0.2);
+}
+@media (hover: hover) and (pointer: fine) {
+  .dark .card-base:hover {
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 4px 20px rgba(0,0,0,0.3);
+  }
 }
 
+/* ─── Button System — Premium Pill CTAs ─── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  min-height: 44px;
+  padding: 0.625rem 1.5rem;
+  transition: all 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+}
+.btn:active { transform: scale(0.96); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+.btn-primary {
+  background: var(--color-primary);
+  color: #FFFFFF;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--color-primary) 30%, transparent);
+}
+.btn-primary:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--color-primary) 40%, transparent);
+  transform: translateY(-1px);
+}
+.btn-secondary {
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: none;
+}
+.btn-secondary:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.btn-ghost {
+  background: transparent;
+  color: var(--color-text);
+  box-shadow: none;
+}
+.btn-ghost:hover:not(:disabled) {
+  background: var(--color-muted);
+}
+.btn-destructive {
+  border: 1px solid var(--color-destructive);
+  color: var(--color-destructive);
+  background: transparent;
+  box-shadow: none;
+}
+.btn-destructive:hover:not(:disabled) {
+  background: var(--pastel-red);
+}
+.btn-sm {
+  min-height: 36px;
+  padding: 0.375rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 9999px;
+}
+
+/* ─── Input System — Refined, focused glow ─── */
+.input {
+  width: 100%;
+  border-radius: 0.75rem;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  color: var(--color-text);
+  min-height: 44px;
+  transition: border-color 300ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: none;
+}
+.input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 12%, transparent);
+  outline: none;
+}
+.input::placeholder { color: var(--color-text-dim); }
+
+/* ─── Badge System — Eyebrow tags, premium tracking ─── */
+.badge {
+  display: inline-block;
+  border-radius: 9999px;
+  padding: 0.1875rem 0.625rem;
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  line-height: 1.5;
+}
+.badge-active { background: var(--pastel-green); color: var(--pastel-green-text); }
+.badge-rented { background: var(--pastel-blue); color: var(--pastel-blue-text); }
+.badge-expired { background: var(--color-muted); color: var(--color-text-dim); }
+.badge-flagged { background: var(--pastel-yellow); color: var(--pastel-yellow-text); }
+
+/* ─── Scrollbar ─── */
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+
+/* ─── Safe Area ─── */
+.safe-area-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
+
+/* ─── Hero ─── */
+.hero-gradient {
+  background: var(--color-bg);
+}
+.dark .hero-gradient {
+  background: linear-gradient(180deg, rgba(249, 115, 22, 0.04) 0%, var(--color-bg) 60%);
+}
+
+/* ─── Scroll Reveal Animation ─── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.reveal { animation: fadeInUp 600ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+/* ─── Reduced Motion ─── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+  html { scroll-behavior: auto; }
+  .press-effect:active { transform: none !important; }
+  .card-base { transition: none !important; }
+}
+
+/* ─── shadcn Tailwind Theme ─── */
+@theme inline {
+  --font-heading: var(--font-sans);
+  --font-sans: var(--font-sans);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
   }
 }
