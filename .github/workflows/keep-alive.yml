@@ -14,7 +14,6 @@ jobs:
     steps:
       - name: Ping Supabase
         run: |
-          echo "SUPABASE_URL=${SUPABASE_URL}"
           STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
             "${SUPABASE_URL}/rest/v1/?apikey=${SUPABASE_ANON_KEY}" \
             -H "apikey: ${SUPABASE_ANON_KEY}" \
