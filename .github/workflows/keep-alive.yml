@@ -7,6 +7,7 @@ on:
 
 permissions:
   issues: write
+  contents: write
 
 jobs:
   ping:
@@ -41,3 +42,16 @@ jobs:
               body: 'The scheduled ping to Supabase failed. [View logs](' + runUrl + ')',
               labels: ['urgent', 'infra'],
             });
+
+  keep-repo-active:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update keepalive file
+        run: echo "Last active: $(date -u +%Y-%m-%dT%H:%M:%SZ)" > .keepalive
+      - name: Commit if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .keepalive
+          git diff --cached --quiet || git commit -m "chore: keep repo active" && git push
