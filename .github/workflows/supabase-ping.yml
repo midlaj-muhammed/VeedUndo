@@ -38,7 +38,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: echo "Last active: $(date -u)" > .keepalive
+      - run: |
+          echo "Last active: $(date -u)" > .keepalive
       - run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
