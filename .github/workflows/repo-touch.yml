@@ -12,10 +12,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Update keepalive file
-        run: echo "Last active: $(date -u +%Y-%m-%dT%H:%M:%SZ)" > .keepalive
-      - name: Commit if changed
-        run: |
+      - run: echo "Last active: $(date -u)" > .keepalive
+      - run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add .keepalive
