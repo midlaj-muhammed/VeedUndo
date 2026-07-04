@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign in to VeedUndo</title>
+</head>
+<body style="margin:0;padding:0;background-color:#FFF7ED;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#FFF7ED;padding:40px 20px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background-color:#FFFFFF;border-radius:16px;border:1px solid #FCEAE1;overflow:hidden;">
+          <!-- Header -->
+          <tr>
+            <td style="padding:32px 32px 24px;">
+              <!-- Logo -->
+              <table role="presentation" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+                <tr>
+                  <td style="width:36px;height:36px;background-color:#EA580C;border-radius:10px;text-align:center;vertical-align:middle;">
+                    <span style="color:#FFFFFF;font-size:18px;font-weight:bold;line-height:36px;">&#9750;</span>
+                  </td>
+                  <td style="padding-left:10px;font-size:18px;font-weight:700;color:#1C1917;letter-spacing:-0.02em;">
+                    VeedUndo
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Title -->
+              <h1 style="margin:0 0 12px;font-size:24px;font-weight:700;color:#1C1917;letter-spacing:-0.02em;line-height:1.3;">
+                Sign in to VeedUndo
+              </h1>
+
+              <!-- Body -->
+              <p style="margin:0 0 28px;font-size:15px;color:#78716C;line-height:1.6;">
+                Click the button below to sign in to your account. This link expires in 60 minutes.
+              </p>
+
+              <!-- CTA Button -->
+              <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 28px;">
+                <tr>
+                  <td style="border-radius:9999px;background-color:#EA580C;">
+                    <a href="{{ .ConfirmationURL }}" target="_blank" style="display:inline-block;padding:14px 32px;font-size:15px;font-weight:600;color:#FFFFFF;text-decoration:none;letter-spacing:-0.01em;">
+                      Sign in
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Fallback link -->
+              <p style="margin:0 0 8px;font-size:13px;color:#A8A29E;">
+                If the button doesn't work, copy and paste this link into your browser:
+              </p>
+              <p style="margin:0;font-size:13px;word-break:break-all;">
+                <a href="{{ .ConfirmationURL }}" style="color:#EA580C;text-decoration:underline;">{{ .ConfirmationURL }}</a>
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding:20px 32px;border-top:1px solid #FCEAE1;">
+              <p style="margin:0;font-size:12px;color:#A8A29E;line-height:1.5;">
+                You're receiving this because someone tried to sign in with your email. If this wasn't you, you can safely ignore this email.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
