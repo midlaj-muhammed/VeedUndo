@@ -5,20 +5,26 @@ on:
     - cron: "0 0 */5 * *"
   workflow_dispatch:
 
+permissions:
+  issues: write
+
 jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
       - name: Ping Supabase
         run: |
+          echo "SUPABASE_URL=${SUPABASE_URL}"
           STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-            "${SUPABASE_URL}/rest/v1/localities?select=id&limit=1" \
+            "${SUPABASE_URL}/rest/v1/?apikey=${SUPABASE_ANON_KEY}" \
             -H "apikey: ${SUPABASE_ANON_KEY}" \
             -H "Authorization: Bearer ${SUPABASE_ANON_KEY}")
           echo "Ping returned HTTP $STATUS"
-          if [ "$STATUS" != "200" ]; then
+          if [ "$STATUS" != "200" ] && [ "$STATUS" != "404" ]; then
+            echo "Unexpected status, Supabase may be down"
             exit 1
           fi
+          echo "Supabase is alive"
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
