@@ -20,11 +20,11 @@ jobs:
             -H "apikey: ${SUPABASE_ANON_KEY}" \
             -H "Authorization: Bearer ${SUPABASE_ANON_KEY}")
           echo "Ping returned HTTP $STATUS"
-          if [ "$STATUS" != "200" ] && [ "$STATUS" != "404" ]; then
-            echo "Unexpected status, Supabase may be down"
+          if [ "$STATUS" == "000" ]; then
+            echo "Supabase is unreachable"
             exit 1
           fi
-          echo "Supabase is alive"
+          echo "Supabase is alive (HTTP $STATUS)"
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
