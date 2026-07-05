@@ -44,6 +44,7 @@ export interface Listing {
   created_at: string;
   flag_count: number;
   source: string | null;
+  source_url: string | null;
 }
 
 export interface ListingWithLocation extends Listing {

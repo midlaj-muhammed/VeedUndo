@@ -49,10 +49,35 @@ def _load_sub_districts():
     return _sub_district_cache
 
 
+# Map common city/area names to sub_district names in the database
+_CITY_NAME_MAP = {
+    "trivandrum": "thiruvananthapuram",
+    "tvm": "thiruvananthapuram",
+    " ernakulam": "ernakulam",
+    "calicut": "kozhikode",
+    "cal": "kozhikode",
+    "cochin": "kochi",
+    "trichur": "thrissur",
+    "tcr": "thrissur",
+    "kollam": "kollam",
+    "quilon": "kollam",
+    "alleppey": "alappuzha",
+    "alappuzha": "alappuzha",
+    "munnar": "idukki",
+    "kottem": "kottayam",
+    "manjeri": "malappuram",
+    "kanhangad": "kasaragod",
+    "vatakara": "kozhikode",
+    "kunnamangalam": "kozhikode",
+    "payyannur": "kannur",
+    "vadakara": "kozhikode",
+}
+
+
 def _match_sub_district(location_text: str) -> str | None:
     """Fuzzy match a parser location string to a sub_district UUID.
 
-    Tries exact match first, then substring, then word overlap.
+    Tries exact match, then city name mapping, then substring/word overlap.
     Returns UUID or None if no match.
     """
     if not location_text:
@@ -70,18 +95,26 @@ def _match_sub_district(location_text: str) -> str | None:
     if clean in lookup:
         return lookup[clean]
 
-    # Substring match: check if any sub_district name is contained in the location
+    # City name mapping: try each word in the location against the map
+    words = [w.strip().rstrip(",.") for w in clean.split()]
+    for word in words:
+        if word in _CITY_NAME_MAP:
+            mapped = _CITY_NAME_MAP[word]
+            if mapped in lookup:
+                return lookup[mapped]
+
+    # Substring match
     for name, uid in lookup.items():
         if name in clean or clean in name:
             return uid
 
-    # Word overlap: split location into words, find best match
-    words = [w.strip() for w in clean.replace(",", " ").split() if len(w.strip()) > 2]
+    # Word overlap
+    clean_words = set(w for w in words if len(w) > 2)
     best_score = 0
     best_uid = None
     for name, uid in lookup.items():
         name_words = set(name.split())
-        overlap = sum(1 for w in words if w in name_words)
+        overlap = sum(1 for w in clean_words if w in name_words)
         if overlap > best_score:
             best_score = overlap
             best_uid = uid
@@ -128,6 +161,7 @@ def insert_listings(listings: list[dict]) -> int:
             "area_sqft": listing.get("area_sqft"),
             "image_urls": listing.get("image_urls") or [],
             "source": "scraped",
+            "source_url": listing.get("url") or None,
             "status": "active",
             "expires_at": (
                 datetime.now(timezone.utc).replace(

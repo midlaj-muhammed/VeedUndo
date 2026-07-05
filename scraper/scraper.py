@@ -6,12 +6,23 @@ from playwright.sync_api import sync_playwright, TimeoutError as PwTimeout
 from config import REQUEST_DELAY, MAX_LISTINGS_PER_SOURCE
 
 KERALA_CITIES = [
-    {"name": "Kochi", "slug_mb": "Kochi", "slug_99": "kochi", "slug_housing": "kochi"},
-    {"name": "Thiruvananthapuram", "slug_mb": "Trivandrum", "slug_99": "thiruvananthapuram", "slug_housing": "thiruvananthapuram"},
-    {"name": "Kozhikode", "slug_mb": "Kozhikode", "slug_99": "kozhikode", "slug_housing": "kozhikode"},
-    {"name": "Thrissur", "slug_mb": "Thrissur", "slug_99": "thrissur", "slug_housing": "thrissur"},
-    {"name": "Kollam", "slug_mb": "Kollam", "slug_99": "kollam", "slug_housing": "kollam"},
+    {"name": "Kochi", "slug": "Kochi"},
+    {"name": "Thiruvananthapuram", "slug": "Trivandrum"},
+    {"name": "Kozhikode", "slug": "Kozhikode"},
+    {"name": "Thrissur", "slug": "Thrissur"},
+    {"name": "Kollam", "slug": "Kollam"},
+    {"name": "Kannur", "slug": "Kannur"},
+    {"name": "Kottayam", "slug": "Kottayam"},
+    {"name": "Palakkad", "slug": "Palakkad"},
+    {"name": "Malappuram", "slug": "Malappuram"},
+    {"name": "Idukki", "slug": "Idukki"},
+    {"name": "Wayanad", "slug": "Wayanad"},
+    {"name": "Ernakulam", "slug": "Ernakulam"},
+    {"name": "Pathanamthitta", "slug": "Pathanamthitta"},
+    {"name": " Kasaragod", "slug": "Kasaragod"},
 ]
+
+MAX_PAGES_PER_CITY = 3
 
 _browser = None
 _pw_instance = None
@@ -55,74 +66,107 @@ def _extract_phone(text: str) -> str | None:
     return match.group(0).replace("+91", "").replace("-", "").replace(" ", "") if match else None
 
 
-def _scroll_load(page, steps=3):
-    """Scroll down gradually to trigger lazy-loaded content."""
+def _scroll_load(page, steps=5):
     for i in range(steps):
-        page.evaluate(f"window.scrollTo(0, {(i + 1) * 800})")
-        page.wait_for_timeout(800)
+        page.evaluate(f"window.scrollTo(0, {(i + 1) * 600})")
+        page.wait_for_timeout(600)
 
 
-# ---------------------------------------------------------------------------
-# MagicBricks — confirmed working selectors
-# ---------------------------------------------------------------------------
+def _extract_cards(page, city_name):
+    """Extract listing data from MagicBricks cards on the current page."""
+    listings = []
+    cards = page.query_selector_all(
+        ".mb-home__owner-exclusive-prop__card, .mb-home__owner-prop__card"
+    )
+    for card in cards:
+        try:
+            def _text(selectors):
+                for sel in selectors:
+                    el = card.query_selector(sel)
+                    if el:
+                        return el.inner_text().strip()
+                return ""
+
+            type_text = _text(["[class*='--type']", "[class*='type']"])
+            price_text = _text(["[class*='--price']", "[class*='price']"])
+            loc_text = _text(["[class*='--loc']", "[class*='loc']"])
+            status_text = _text(["[class*='--status']", "[class*='status']"])
+            size_text = _text(["[class*='--size']", "[class*='size']"])
+
+            img_url = ""
+            img_el = card.query_selector("img")
+            if img_el:
+                img_url = img_el.get_attribute("src") or img_el.get_attribute("data-src") or ""
+
+            # Build listing URL from title/area for "View on MagicBricks" link
+            listing_url = f"https://www.magicbricks.com/property-for-sale-rent-in-{city_name.replace(' ', '-')}/residential-real-estate-{city_name.replace(' ', '-')}"
+
+            if type_text or price_text:
+                desc_parts = [type_text]
+                if size_text:
+                    desc_parts.append(size_text)
+                if loc_text:
+                    desc_parts.append(f"in {loc_text}")
+                if status_text:
+                    desc_parts.append(f". {status_text}")
+                listings.append({
+                    "source": "magicbricks",
+                    "title": type_text,
+                    "price_text": price_text,
+                    "area": size_text,
+                    "description": " ".join(desc_parts),
+                    "location": loc_text or city_name,
+                    "phone": None,
+                    "images": [img_url] if img_url else [],
+                    "url": listing_url,
+                })
+        except Exception:
+            continue
+    return listings
+
+
 def scrape_magicbricks() -> list[dict]:
     raw_listings = []
+    seen_titles = set()
     context, page = _new_page()
 
     try:
         for city in KERALA_CITIES:
             print(f"  [MagicBricks] {city['name']}...")
-            url = f"https://www.magicbricks.com/property-for-sale-rent-in-{city['slug_mb']}/residential-real-estate-{city['slug_mb']}"
-            try:
-                page.goto(url, wait_until="networkidle", timeout=30000)
-                page.wait_for_timeout(3000)
-                _scroll_load(page)
+            city_listings = 0
 
-                # Confirmed working selectors from testing
-                cards = page.query_selector_all(
-                    ".mb-home__owner-exclusive-prop__card, "
-                    ".mb-home__owner-prop__card"
-                )
+            for pg in range(1, MAX_PAGES_PER_CITY + 1):
+                url = f"https://www.magicbricks.com/property-for-sale-rent-in-{city['slug']}/residential-real-estate-{city['slug']}"
+                if pg > 1:
+                    url += f"?page={pg}"
 
-                count = 0
-                for card in cards[:MAX_LISTINGS_PER_SOURCE // len(KERALA_CITIES)]:
-                    try:
-                        def _text(sel):
-                            el = card.query_selector(sel)
-                            return el.inner_text().strip() if el else ""
+                try:
+                    page.goto(url, wait_until="domcontentloaded", timeout=20000)
+                    page.wait_for_timeout(2000)
+                    _scroll_load(page, 8)
 
-                        type_text = _text("[class*='--type']")
-                        price_text = _text("[class*='--price']")
-                        loc_text = _text("[class*='--loc']")
-                        status_text = _text("[class*='--status']")
+                    cards = _extract_cards(page, city["name"])
+                    if not cards:
+                        break  # No more listings on subsequent pages
 
-                        img_url = ""
-                        img_el = card.query_selector("img")
-                        if img_el:
-                            img_url = img_el.get_attribute("src") or img_el.get_attribute("data-src") or ""
+                    for listing in cards:
+                        dedup_key = f"{listing['title']}|{listing['location']}"
+                        if dedup_key not in seen_titles:
+                            seen_titles.add(dedup_key)
+                            raw_listings.append(listing)
+                            city_listings += 1
 
-                        if type_text or price_text:
-                            raw_listings.append({
-                                "source": "magicbricks",
-                                "title": type_text,
-                                "price_text": price_text,
-                                "area": "",
-                                "description": f"{type_text} in {loc_text}. {status_text}".strip(),
-                                "location": loc_text or city["name"],
-                                "phone": _extract_phone(type_text + " " + loc_text),
-                                "images": [img_url] if img_url else [],
-                                "url": "",
-                            })
-                            count += 1
-                    except Exception:
-                        continue
+                    print(f"    Page {pg}: {len(cards)} cards")
+                except PwTimeout:
+                    print(f"    Page {pg}: timeout")
+                    break
+                except Exception as e:
+                    print(f"    Page {pg}: {e}")
+                    break
 
-                print(f"    Found {count} listings")
-            except PwTimeout:
-                print(f"    Timeout loading {city['name']}")
-            except Exception as e:
-                print(f"    Error: {e}")
-            time.sleep(REQUEST_DELAY)
+                time.sleep(REQUEST_DELAY)
+
+            print(f"    Total: {city_listings} listings")
     finally:
         context.close()
 
@@ -130,9 +174,6 @@ def scrape_magicbricks() -> list[dict]:
     return raw_listings
 
 
-# ---------------------------------------------------------------------------
-# 99acres — Playwright
-# ---------------------------------------------------------------------------
 def scrape_99acres() -> list[dict]:
     raw_listings = []
     context, page = _new_page()
@@ -140,18 +181,13 @@ def scrape_99acres() -> list[dict]:
     try:
         for city in KERALA_CITIES:
             print(f"  [99acres] {city['name']}...")
-            url = f"https://www.99acres.com/property-for-rent-in-{city['slug_99']}"
+            url = f"https://www.99acres.com/property-for-rent-in-{city['slug'].lower()}"
             try:
-                page.goto(url, wait_until="networkidle", timeout=30000)
-                page.wait_for_timeout(3000)
-                _scroll_load(page)
+                page.goto(url, wait_until="domcontentloaded", timeout=20000)
+                page.wait_for_timeout(2000)
+                _scroll_load(page, 5)
 
-                # Try multiple selector patterns
-                cards = page.query_selector_all(
-                    "[class*='tupleMaxInfo'], [class*='nortp-listing'], [class*='listing-card']"
-                )
-                if not cards:
-                    cards = page.query_selector_all("[class*='property-card']")
+                cards = page.query_selector_all("[class*='tupleMaxInfo'], [class*='listing-card'], [class*='property-card']")
 
                 count = 0
                 for card in cards[:MAX_LISTINGS_PER_SOURCE // len(KERALA_CITIES)]:
@@ -163,9 +199,9 @@ def scrape_99acres() -> list[dict]:
                                     return el.inner_text().strip()
                             return ""
 
-                        title = _text_99(["h2", "[class*='title']", ".headingOfProperty"])
-                        price_text = _text_99(["[class*='price']", ".listStrongSpo"])
-                        loc = _text_99(["[class*='loc']", ".locTxt"])
+                        title = _text_99(["h2", "[class*='title']"])
+                        price_text = _text_99(["[class*='price']"])
+                        loc = _text_99(["[class*='loc']"])
 
                         img_url = ""
                         img_el = card.query_selector("img")
@@ -180,9 +216,9 @@ def scrape_99acres() -> list[dict]:
                                 "area": "",
                                 "description": title,
                                 "location": loc or city["name"],
-                                "phone": _extract_phone(title),
+                                "phone": None,
                                 "images": [img_url] if img_url else [],
-                                "url": "",
+                                "url": url,
                             })
                             count += 1
                     except Exception:
@@ -190,7 +226,7 @@ def scrape_99acres() -> list[dict]:
 
                 print(f"    Found {count} listings")
             except PwTimeout:
-                print(f"    Timeout loading {city['name']}")
+                print(f"    Timeout")
             except Exception as e:
                 print(f"    Error: {e}")
             time.sleep(REQUEST_DELAY)
@@ -201,9 +237,6 @@ def scrape_99acres() -> list[dict]:
     return raw_listings
 
 
-# ---------------------------------------------------------------------------
-# Housing.com — Playwright
-# ---------------------------------------------------------------------------
 def scrape_housing() -> list[dict]:
     raw_listings = []
     context, page = _new_page()
@@ -211,11 +244,11 @@ def scrape_housing() -> list[dict]:
     try:
         for city in KERALA_CITIES:
             print(f"  [Housing.com] {city['name']}...")
-            url = f"https://housing.com/property-for-rent/{city['slug_housing']}"
+            url = f"https://housing.com/property-for-rent/{city['slug'].lower()}"
             try:
-                page.goto(url, wait_until="networkidle", timeout=30000)
-                page.wait_for_timeout(3000)
-                _scroll_load(page)
+                page.goto(url, wait_until="domcontentloaded", timeout=20000)
+                page.wait_for_timeout(2000)
+                _scroll_load(page, 5)
 
                 cards = page.query_selector_all("[class*='listing'], [class*='card'], article")
 
@@ -246,7 +279,7 @@ def scrape_housing() -> list[dict]:
                                 "area": "",
                                 "description": title,
                                 "location": loc or city["name"],
-                                "phone": _extract_phone(title),
+                                "phone": None,
                                 "images": [img_url] if img_url else [],
                                 "url": "",
                             })
@@ -256,7 +289,7 @@ def scrape_housing() -> list[dict]:
 
                 print(f"    Found {count} listings")
             except PwTimeout:
-                print(f"    Timeout loading {city['name']}")
+                print(f"    Timeout")
             except Exception as e:
                 print(f"    Error: {e}")
             time.sleep(REQUEST_DELAY)
