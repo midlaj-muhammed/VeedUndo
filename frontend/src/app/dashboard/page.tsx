@@ -24,7 +24,7 @@ export default function Dashboard() {
   useEffect(() => { supabase.auth.getSession().then(({ data }) => { setSession(data.session); if (data.session?.user?.email) loadListings(data.session.user.email); else setLoading(false); }); }, []);
 
   async function loadListings(email: string) {
-    const { data, error: err } = await supabase.from("listings").select("id, rent_min, rent_max, price, house_type, poster_type, status, listing_mode, bedrooms, furnishing, area_sqft, expires_at, created_at, image_urls").eq("poster_email", email).order("created_at", { ascending: false });
+    const { data, error: err } = await supabase.from("listings").select("id, rent_min, rent_max, price, house_type, poster_type, status, listing_mode, property_category, bedrooms, furnishing, area_sqft, plot_area_acres, road_frontage_ft, zoning, built_up_sqft, floor_number, parking, expires_at, created_at, image_urls").eq("poster_email", email).order("created_at", { ascending: false });
     if (err) setError("Failed to load listings.");
     setListings((data as Listing[]) || []);
     setLoading(false);

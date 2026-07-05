@@ -29,6 +29,12 @@ export interface Listing {
   bedrooms: number | null;
   furnishing: Furnishing | null;
   area_sqft: number | null;
+  plot_area_acres: number | null;
+  road_frontage_ft: number | null;
+  zoning: string | null;
+  built_up_sqft: number | null;
+  floor_number: number | null;
+  parking: string | null;
   image_urls: string[];
   expires_at: string;
   renewed_at: string;

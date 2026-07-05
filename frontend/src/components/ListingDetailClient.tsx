@@ -86,6 +86,28 @@ export default function ListingDetailClient({ initialListing }: { initialListing
         {isRented && (<div className="mb-6 rounded-2xl border border-green-500/20 bg-green-500/5 px-5 py-4 flex items-center gap-3"><svg className="w-6 h-6 text-green-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg><div><p className="font-semibold text-green-600 dark:text-green-400">This listing has been rented</p><p className="text-sm text-[var(--color-text-muted)]">The poster has marked this property as no longer available.</p></div></div>)}
         {isSold && (<div className="mb-6 rounded-2xl border border-blue-500/20 bg-blue-500/5 px-5 py-4 flex items-center gap-3"><svg className="w-6 h-6 text-blue-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg><div><p className="font-semibold text-blue-600 dark:text-blue-400">This property has been sold</p><p className="text-sm text-[var(--color-text-muted)]">The poster has marked this property as sold.</p></div></div>)}
         {listing.description && (<div className="mb-6"><h2 className="font-semibold text-[var(--color-text)] mb-2">Description</h2><p className="text-[var(--color-text-dim)] whitespace-pre-wrap leading-relaxed">{listing.description}</p></div>)}
+        {/* Land details */}
+        {listing.property_category === "land" && (listing.plot_area_acres || listing.road_frontage_ft || listing.zoning) && (
+          <div className="mb-6">
+            <h2 className="font-semibold text-[var(--color-text)] mb-3">Land Details</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {listing.plot_area_acres && <div className="rounded-xl bg-[var(--color-muted)] px-4 py-3"><p className="text-xs text-[var(--color-text-dim)] uppercase tracking-wider mb-1">Plot Area</p><p className="text-sm font-medium text-[var(--color-text)]">{listing.plot_area_acres} acres</p></div>}
+              {listing.road_frontage_ft && <div className="rounded-xl bg-[var(--color-muted)] px-4 py-3"><p className="text-xs text-[var(--color-text-dim)] uppercase tracking-wider mb-1">Road Frontage</p><p className="text-sm font-medium text-[var(--color-text)]">{listing.road_frontage_ft} ft</p></div>}
+              {listing.zoning && <div className="rounded-xl bg-[var(--color-muted)] px-4 py-3"><p className="text-xs text-[var(--color-text-dim)] uppercase tracking-wider mb-1">Zoning</p><p className="text-sm font-medium text-[var(--color-text)]">{listing.zoning}</p></div>}
+            </div>
+          </div>
+        )}
+        {/* Commercial details */}
+        {listing.property_category === "commercial" && (listing.built_up_sqft || listing.floor_number || listing.parking) && (
+          <div className="mb-6">
+            <h2 className="font-semibold text-[var(--color-text)] mb-3">Commercial Details</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {listing.built_up_sqft && <div className="rounded-xl bg-[var(--color-muted)] px-4 py-3"><p className="text-xs text-[var(--color-text-dim)] uppercase tracking-wider mb-1">Built-up Area</p><p className="text-sm font-medium text-[var(--color-text)]">{listing.built_up_sqft} sqft</p></div>}
+              {listing.floor_number != null && <div className="rounded-xl bg-[var(--color-muted)] px-4 py-3"><p className="text-xs text-[var(--color-text-dim)] uppercase tracking-wider mb-1">Floor</p><p className="text-sm font-medium text-[var(--color-text)]">{listing.floor_number}</p></div>}
+              {listing.parking && <div className="rounded-xl bg-[var(--color-muted)] px-4 py-3"><p className="text-xs text-[var(--color-text-dim)] uppercase tracking-wider mb-1">Parking</p><p className="text-sm font-medium text-[var(--color-text)]">{listing.parking}</p></div>}
+            </div>
+          </div>
+        )}
         {!isUnavailable && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 300, damping: 25, delay: 0.3 }} className="card-base rounded-2xl p-6 mb-8">
             <h2 className="font-semibold text-[var(--color-text)] mb-4 text-lg">Contact</h2>

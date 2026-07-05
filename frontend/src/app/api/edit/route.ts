@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
   if (authErr || !user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json();
-  const { listing_id, rent_min, rent_max, price, house_type, description, poster_phone, poster_whatsapp, bedrooms, furnishing, area_sqft } = body;
+  const { listing_id, rent_min, rent_max, price, house_type, description, poster_phone, poster_whatsapp, bedrooms, furnishing, area_sqft, plot_area_acres, road_frontage_ft, zoning, built_up_sqft, floor_number, parking } = body;
 
   if (!listing_id || typeof listing_id !== "string") {
     return NextResponse.json({ error: "listing_id required" }, { status: 400 });
@@ -74,6 +74,24 @@ export async function POST(req: NextRequest) {
   }
   if (area_sqft !== undefined) {
     update.area_sqft = area_sqft === null ? null : Number(area_sqft);
+  }
+  if (plot_area_acres !== undefined) {
+    update.plot_area_acres = plot_area_acres === null ? null : Number(plot_area_acres);
+  }
+  if (road_frontage_ft !== undefined) {
+    update.road_frontage_ft = road_frontage_ft === null ? null : Number(road_frontage_ft);
+  }
+  if (zoning !== undefined) {
+    update.zoning = zoning;
+  }
+  if (built_up_sqft !== undefined) {
+    update.built_up_sqft = built_up_sqft === null ? null : Number(built_up_sqft);
+  }
+  if (floor_number !== undefined) {
+    update.floor_number = floor_number === null ? null : Number(floor_number);
+  }
+  if (parking !== undefined) {
+    update.parking = parking;
   }
 
   if (Object.keys(update).length === 0) {

@@ -151,6 +151,12 @@ export default function PostForm() {
   const [bedrooms, setBedrooms] = useState("");
   const [furnishing, setFurnishing] = useState<Furnishing>("unfurnished");
   const [areaSqft, setAreaSqft] = useState("");
+  const [plotAreaAcres, setPlotAreaAcres] = useState("");
+  const [roadFrontage, setRoadFrontage] = useState("");
+  const [zoning, setZoning] = useState("");
+  const [builtUpSqft, setBuiltUpSqft] = useState("");
+  const [floorNumber, setFloorNumber] = useState("");
+  const [parking, setParking] = useState("");
   const [description, setDescription] = useState("");
   const [posterType, setPosterType] = useState<PosterType>("owner");
   const [phone, setPhone] = useState("");
@@ -236,7 +242,6 @@ export default function PostForm() {
       });
       if (!uploadRes.ok) throw new Error("Image upload failed");
       const { urls } = await uploadRes.json();
-      const propertyCategory = (Object.entries(CATEGORY_HOUSE_TYPES).find(([, types]) => types.includes(houseType))?.[0] || "residential") as "residential" | "commercial" | "land";
       const { error: insertError } = await supabase.from("listings").insert({
         sub_district_id: subDistrictId || null,
         listing_mode: listingMode,
@@ -253,6 +258,12 @@ export default function PostForm() {
         bedrooms: bedrooms ? parseInt(bedrooms) : null,
         furnishing: furnishing,
         area_sqft: areaSqft ? parseInt(areaSqft) : null,
+        plot_area_acres: plotAreaAcres ? parseFloat(plotAreaAcres) : null,
+        road_frontage_ft: roadFrontage ? parseInt(roadFrontage) : null,
+        zoning: zoning || null,
+        built_up_sqft: builtUpSqft ? parseInt(builtUpSqft) : null,
+        floor_number: floorNumber ? parseInt(floorNumber) : null,
+        parking: parking || null,
         image_urls: urls,
         expires_at: new Date(Date.now() + (listingMode === "sell" ? 90 : 10) * 24 * 60 * 60 * 1000).toISOString(),
       });
@@ -281,6 +292,7 @@ export default function PostForm() {
   const rentOptions = RENT_HOUSE_TYPES.map((k) => ({ value: k, label: HOUSE_TYPE_LABELS[k] }));
   const sellOptions = SELL_HOUSE_TYPES.map((k) => ({ value: k, label: HOUSE_TYPE_LABELS[k] }));
   const houseTypeOptions = listingMode === "rent" ? rentOptions : sellOptions;
+  const propertyCategory = (Object.entries(CATEGORY_HOUSE_TYPES).find(([, types]) => types.includes(houseType))?.[0] || "residential") as "residential" | "commercial" | "land";
   const districtOptions = districts.map((d) => ({ value: d.id, label: d.name }));
   const subDistrictOptions = subDistricts.map((s) => ({ value: s.id, label: s.name }));
 
@@ -462,6 +474,56 @@ export default function PostForm() {
                 className="input"
               />
             </div>
+          )}
+          {/* Land-specific fields */}
+          {propertyCategory === "land" && (
+            <>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium uppercase tracking-wider text-[var(--color-text-muted)] mb-1.5">
+                    Plot area (acres)
+                  </label>
+                  <input type="number" step="0.01" min={0} placeholder="e.g. 2.5" value={plotAreaAcres} onChange={(e) => setPlotAreaAcres(e.target.value)} className="input" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium uppercase tracking-wider text-[var(--color-text-muted)] mb-1.5">
+                    Road frontage (ft)
+                  </label>
+                  <input type="number" min={0} placeholder="e.g. 80" value={roadFrontage} onChange={(e) => setRoadFrontage(e.target.value)} className="input" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-medium uppercase tracking-wider text-[var(--color-text-muted)] mb-1.5">
+                  Zoning / Land use
+                </label>
+                <input type="text" placeholder="e.g. Residential, Commercial, Agricultural" value={zoning} onChange={(e) => setZoning(e.target.value)} className="input" />
+              </div>
+            </>
+          )}
+          {/* Commercial-specific fields */}
+          {propertyCategory === "commercial" && (
+            <>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium uppercase tracking-wider text-[var(--color-text-muted)] mb-1.5">
+                    Built-up area (sq ft)
+                  </label>
+                  <input type="number" min={0} placeholder="e.g. 2000" value={builtUpSqft} onChange={(e) => setBuiltUpSqft(e.target.value)} className="input" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium uppercase tracking-wider text-[var(--color-text-muted)] mb-1.5">
+                    Floor
+                  </label>
+                  <input type="number" min={0} placeholder="e.g. 2" value={floorNumber} onChange={(e) => setFloorNumber(e.target.value)} className="input" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-medium uppercase tracking-wider text-[var(--color-text-muted)] mb-1.5">
+                  Parking
+                </label>
+                <input type="text" placeholder="e.g. 2 covered spots" value={parking} onChange={(e) => setParking(e.target.value)} className="input" />
+              </div>
+            </>
           )}
         </div>
 
