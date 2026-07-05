@@ -6,7 +6,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import type { ListingWithLocation } from "@/lib/types";
 import { HOUSE_TYPE_LABELS, LISTING_MODE_LABELS, FURNISHING_LABELS } from "@/lib/types";
-import { timeAgo, shareListing } from "@/lib/utils";
+import { timeAgo, shareListing, addRecentlyViewed } from "@/lib/utils";
 import ImageLightbox from "@/components/ImageLightbox";
 import Navbar from "@/components/Navbar";
 import { motion } from "motion/react";
@@ -17,6 +17,10 @@ export default function ListingDetailClient({ initialListing }: { initialListing
   const [flagged, setFlagged] = useState(false);
   const [selectedImg, setSelectedImg] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+
+  useEffect(() => {
+    if (listing?.id) addRecentlyViewed(listing.id);
+  }, [listing?.id]);
 
   if (!listing) return (<div className="flex flex-col min-h-dvh"><Navbar /><div className="flex-1 flex flex-col items-center justify-center gap-4 px-4"><p className="text-lg font-medium text-[var(--color-text)]">Listing not found</p><Link href="/" className="text-[var(--color-primary)] hover:underline min-h-[44px] flex items-center">Back to browse</Link></div></div>);
 

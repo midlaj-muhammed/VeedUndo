@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import type { ListingWithLocation, District } from "@/lib/types";
+import { getRecentlyViewed } from "@/lib/utils";
 import BrowseFilters from "@/components/BrowseFilters";
 import ListingCard, { ListingCardSkeleton } from "@/components/ListingCard";
 import Navbar from "@/components/Navbar";
@@ -13,6 +14,7 @@ export default function Home() {
   const [districts, setDistricts] = useState<District[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [recentListings, setRecentListings] = useState<ListingWithLocation[]>([]);
   const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState("");
   const [filters, setFilters] = useState({ listingMode: "", propertyCategory: "", districtId: "", subDistrictId: "", rentRange: "", priceRange: "", houseType: "", posterType: "", search: "", sort: "" });
@@ -20,6 +22,16 @@ export default function Home() {
 
   useEffect(() => {
     supabase.from("districts").select("*").order("name").then(({ data }) => { if (data) setDistricts(data); });
+    // Fetch recently viewed listings
+    const recentIds = getRecentlyViewed();
+    if (recentIds.length > 0) {
+      supabase.from("listings").select("*, sub_districts!inner(*, districts!inner(*))").in("id", recentIds).eq("status", "active").then(({ data }) => {
+        if (data) {
+          const ordered = recentIds.map(id => data.find(l => l.id === id)).filter(Boolean) as ListingWithLocation[];
+          setRecentListings(ordered);
+        }
+      });
+    }
   }, []);
 
   useEffect(() => {
@@ -40,7 +52,10 @@ export default function Home() {
     if (filters.posterType) query = query.eq("poster_type", filters.posterType);
     if (filters.rentRange) { const [min, max] = filters.rentRange.split("-").map(Number); query = query.gte("rent_max", min).lte("rent_min", max); }
     if (filters.priceRange) { const [min, max] = filters.priceRange.split("-").map(Number); query = query.gte("price", min).lte("price", max); }
-    if (filters.search) query = query.ilike("description", `%${filters.search}%`);
+    if (filters.search) {
+      const tsQuery = filters.search.split(/\s+/).filter(Boolean).map(w => `${w}:*`).join(" & ");
+      query = query.or(`description_tsv.fts.${tsQuery},description.ilike.%${filters.search}%`);
+    }
     const sortCol = filters.sort === "price_asc" || filters.sort === "price_desc" ? "price" : "created_at";
     query = query.order(sortCol, { ascending: filters.sort === "price_asc", nullsFirst: filters.sort.startsWith("price") ? false : undefined });
     query = query.range(offset, offset + PAGE_SIZE - 1);
@@ -101,6 +116,13 @@ export default function Home() {
       </header>
 
       <main id="listings" className="flex-1 max-w-5xl mx-auto w-full px-6 py-16 sm:py-24">
+        {/* Recently Viewed */}
+        {recentListings.length > 0 && !filters.search && !filters.districtId && !filters.subDistrictId && !filters.rentRange && !filters.priceRange && !filters.houseType && !filters.posterType && (
+          <div className="mb-12">
+            <h2 className="text-lg font-semibold text-[var(--color-text)] mb-4">Recently Viewed</h2>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{recentListings.map((l) => <ListingCard key={l.id} listing={l} />)}</div>
+          </div>
+        )}
         <BrowseFilters districts={districts} filters={filters} onChange={setFilters} />
         {loading ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{Array.from({ length: 6 }).map((_, i) => <ListingCardSkeleton key={i} />)}</div>

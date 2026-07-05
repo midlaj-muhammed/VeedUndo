@@ -5,6 +5,7 @@ import type { District, SubDistrict, ListingMode, PropertyCategory } from "@/lib
 import { HOUSE_TYPE_LABELS, PROPERTY_CATEGORY_LABELS, CATEGORY_HOUSE_TYPES } from "@/lib/types";
 import { DropdownPortal, useDropdownPosition } from "@/components/DropdownPortal";
 import { motion } from "motion/react";
+import { supabase } from "@/lib/supabase";
 
 export interface Filters {
   listingMode: string;
@@ -44,6 +45,7 @@ const PRICE_RANGES = [
 export default function BrowseFilters({ districts, filters, onChange }: Props) {
   const [subDistricts, setSubDistricts] = useState<SubDistrict[]>([]);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [locating, setLocating] = useState(false);
   const district = useDropdownPosition();
   const sub = useDropdownPosition();
   const rent = useDropdownPosition();
@@ -83,12 +85,42 @@ export default function BrowseFilters({ districts, filters, onChange }: Props) {
     closeAll();
   }
 
+  async function handleNearMe() {
+    if (!navigator.geolocation) return;
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`);
+          const data = await res.json();
+          const county = data.address?.county || data.address?.state_district || "";
+          const match = districts.find(d => county.toLowerCase().includes(d.name.toLowerCase()));
+          if (match) {
+            onChange({ ...filters, districtId: match.id, subDistrictId: "" });
+          }
+        } catch {}
+        setLocating(false);
+      },
+      () => setLocating(false),
+      { timeout: 10000 }
+    );
+  }
+
   function clearAll() {
     onChange({ listingMode: filters.listingMode, propertyCategory: filters.propertyCategory, districtId: "", subDistrictId: "", rentRange: "", priceRange: "", houseType: "", posterType: "", search: "", sort: "" });
     closeAll();
   }
 
   const activeCount = [filters.districtId, filters.subDistrictId, filters.rentRange, filters.priceRange, filters.houseType, filters.posterType, filters.search].filter(Boolean).length;
+
+  async function saveSearch() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) { alert("Please sign in to save searches."); return; }
+    const label = prompt("Name this search:");
+    if (!label) return;
+    await supabase.from("saved_searches").insert({ user_id: session.user.id, label, filters });
+    alert("Search saved!");
+  }
 
   const districtLabel = filters.districtId ? districts.find((d) => d.id === filters.districtId)?.name : null;
   const subLabel = filters.subDistrictId ? subDistricts.find((s) => s.id === filters.subDistrictId)?.name : null;
@@ -167,6 +199,14 @@ export default function BrowseFilters({ districts, filters, onChange }: Props) {
             onChange={(e) => onChange({ ...filters, search: e.target.value })}
             className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] pl-9 pr-4 py-2.5 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-dim)] focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/20 min-h-[40px]"
           />
+          <button
+            onClick={handleNearMe}
+            disabled={locating}
+            className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 rounded-full bg-[var(--color-primary)]/10 text-[var(--color-primary)] px-3 py-1.5 text-xs font-medium hover:bg-[var(--color-primary)]/20 transition-colors min-h-[32px]"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg>
+            {locating ? "Locating..." : "Near me"}
+          </button>
           {filters.search && (
             <button onClick={() => onChange({ ...filters, search: "" })} className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--color-text-dim)] hover:text-[var(--color-text)] w-10 h-10 flex items-center justify-center min-w-[44px] min-h-[44px]">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
@@ -304,9 +344,14 @@ export default function BrowseFilters({ districts, filters, onChange }: Props) {
       {activeCount > 0 && (
         <div className="flex items-center justify-between mt-2 px-1">
           <span className="text-xs text-[var(--color-text-dim)]">{activeCount} filter{activeCount > 1 ? "s" : ""} active</span>
-          <button onClick={clearAll} className="text-xs font-medium text-[var(--color-destructive)] hover:underline min-h-[36px] flex items-center">
-            Clear all
-          </button>
+          <div className="flex items-center gap-3">
+            <button onClick={saveSearch} className="text-xs font-medium text-[var(--color-primary)] hover:underline min-h-[36px] flex items-center">
+              Save search
+            </button>
+            <button onClick={clearAll} className="text-xs font-medium text-[var(--color-destructive)] hover:underline min-h-[36px] flex items-center">
+              Clear all
+            </button>
+          </div>
         </div>
       )}
 

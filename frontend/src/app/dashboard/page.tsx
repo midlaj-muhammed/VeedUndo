@@ -20,8 +20,19 @@ export default function Dashboard() {
   const [editForm, setEditForm] = useState({ rent_min: "", rent_max: "", price: "", house_type: "", description: "", poster_phone: "", poster_whatsapp: "", bedrooms: "", furnishing: "unfurnished", area_sqft: "" });
   const [saving, setSaving] = useState(false);
   const [statusFilter, setStatusFilter] = useState("All");
+  const [savedSearches, setSavedSearches] = useState<{ id: string; label: string; filters: Record<string, string> }[]>([]);
 
-  useEffect(() => { supabase.auth.getSession().then(({ data }) => { setSession(data.session); if (data.session?.user?.email) loadListings(data.session.user.email); else setLoading(false); }); }, []);
+  useEffect(() => { supabase.auth.getSession().then(({ data }) => { setSession(data.session); if (data.session?.user?.email) { loadListings(data.session.user.email); loadSavedSearches(data.session.user.id); } else setLoading(false); }); }, []);
+
+  async function loadSavedSearches(userId: string) {
+    const { data } = await supabase.from("saved_searches").select("id, label, filters").eq("user_id", userId).order("created_at", { ascending: false });
+    setSavedSearches((data as any[]) || []);
+  }
+
+  async function deleteSavedSearch(id: string) {
+    await supabase.from("saved_searches").delete().eq("id", id);
+    setSavedSearches(prev => prev.filter(s => s.id !== id));
+  }
 
   async function loadListings(email: string) {
     const { data, error: err } = await supabase.from("listings").select("id, rent_min, rent_max, price, house_type, poster_type, status, listing_mode, property_category, bedrooms, furnishing, area_sqft, plot_area_acres, road_frontage_ft, zoning, built_up_sqft, floor_number, parking, expires_at, created_at, image_urls").eq("poster_email", email).order("created_at", { ascending: false });
@@ -166,6 +177,25 @@ export default function Dashboard() {
           </div>
         )}
       </main>
+
+      {/* Saved Searches */}
+      {savedSearches.length > 0 && (
+        <div className="mt-12">
+          <h2 className="text-xl font-bold text-[var(--color-text)] mb-4">Saved Searches</h2>
+          <div className="space-y-2">
+            {savedSearches.map((s) => (
+              <div key={s.id} className="flex items-center justify-between card-base rounded-xl px-4 py-3">
+                <Link href={`/?${new URLSearchParams(Object.entries(s.filters).filter(([, v]) => v)).toString()}`} className="text-sm font-medium text-[var(--color-text)] hover:text-[var(--color-primary)]">
+                  {s.label}
+                </Link>
+                <button onClick={() => deleteSavedSearch(s.id)} className="text-xs text-[var(--color-text-dim)] hover:text-[var(--color-destructive)] min-h-[36px]">
+                  Delete
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Edit Modal — premium treatment */}
       {editingId && (

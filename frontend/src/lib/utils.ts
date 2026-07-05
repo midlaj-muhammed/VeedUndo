@@ -41,3 +41,28 @@ export function shareListing(listing: { title?: string; description?: string | n
     alert("Link copied!")
   }
 }
+
+// Recently viewed listings (localStorage)
+const RECENTLY_VIEWED_KEY = "veedundo-recently-viewed";
+const MAX_RECENT = 6;
+
+export function addRecentlyViewed(listingId: string) {
+  if (typeof window === "undefined") return;
+  try {
+    const raw = localStorage.getItem(RECENTLY_VIEWED_KEY);
+    const ids: string[] = raw ? JSON.parse(raw) : [];
+    const filtered = ids.filter((id) => id !== listingId);
+    filtered.unshift(listingId);
+    localStorage.setItem(RECENTLY_VIEWED_KEY, JSON.stringify(filtered.slice(0, MAX_RECENT)));
+  } catch {}
+}
+
+export function getRecentlyViewed(): string[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(RECENTLY_VIEWED_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
