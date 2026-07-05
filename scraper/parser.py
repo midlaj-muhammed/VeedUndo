@@ -149,7 +149,7 @@ def _fallback_parse(raw_listings: list[dict]) -> list[dict]:
 def parse_listings(raw_listings: list[dict]) -> list[dict]:
     """Parse raw scraped listings into structured VeedUndo format using Groq.
 
-    Falls back to regex parsing if Groq fails.
+    Falls back to regex parsing if Groq fails or returns 0 results.
     """
     if not raw_listings:
         return []
@@ -157,7 +157,10 @@ def parse_listings(raw_listings: list[dict]) -> list[dict]:
     # Try Groq first
     if _groq_client:
         try:
-            return _parse_with_groq(raw_listings)
+            result = _parse_with_groq(raw_listings)
+            if result:
+                return result
+            print("  [parser] Groq returned 0 listings, falling back to regex parser")
         except Exception as e:
             print(f"  [parser] Groq failed ({e}), falling back to regex parser")
 
