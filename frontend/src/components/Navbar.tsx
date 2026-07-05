@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import ThemeToggle from "@/components/ThemeToggle";
 import { Logo } from "@/components/Logo";
+import { supabase } from "@/lib/supabase";
 
 interface Props {
   variant?: "home" | "dashboard" | "post" | "auth" | "detail";
@@ -61,11 +62,7 @@ function BottomNav({ pathname }: { pathname: string }) {
             isPost ? "text-[var(--color-primary)]" : "text-[var(--color-text-muted)]"
           }`}
         >
-          <div className={`w-10 h-10 rounded-full flex items-center justify-center -mt-5 shadow-lg transition-colors ${
-            isPost
-              ? "bg-[var(--color-primary)] text-white"
-              : "bg-[var(--color-primary)] text-white"
-          }`}>
+          <div className={`w-10 h-10 rounded-full flex items-center justify-center -mt-5 shadow-lg transition-colors bg-[var(--color-primary)] text-white`}>
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
             </svg>
@@ -96,6 +93,17 @@ export default function Navbar({ variant = "home", locationText }: Props) {
   const isDashboard = pathname === "/dashboard";
   const isDetail = pathname.startsWith("/listing/");
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setUser(data.user));
+    const { data: listener } = supabase.auth.onAuthStateChange((_e, session) => {
+      setUser(session?.user || null);
+    });
+    return () => listener.subscription.unsubscribe();
+  }, []);
+
+  const firstName = user?.user_metadata?.full_name?.split(" ")[0] || "";
 
   return (
     <>
@@ -123,6 +131,33 @@ export default function Navbar({ variant = "home", locationText }: Props) {
           {/* Right: Actions */}
           <div className="flex items-center gap-2">
             <ThemeToggle />
+
+            {/* Logged-in: heart + name + logout */}
+            {user ? (
+              <div className="hidden sm:flex items-center gap-2">
+                <Link href="/saved" className="w-9 h-9 rounded-full flex items-center justify-center text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-border)]/40 transition-colors" aria-label="Saved listings">
+                  <svg className="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+                  </svg>
+                </Link>
+                <Link href="/account" className="flex items-center gap-1.5 text-sm font-medium text-[var(--color-text)] hover:text-[var(--color-primary)] transition-colors px-2 py-1 rounded-lg">
+                  <svg className="w-4 h-4 text-[var(--color-text-muted)]" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                  </svg>
+                  {firstName}
+                </Link>
+                <button onClick={async () => { await supabase.auth.signOut(); window.location.href = "/"; }} className="w-9 h-9 rounded-full flex items-center justify-center text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-border)]/40 transition-colors" aria-label="Log out">
+                  <svg className="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
+                  </svg>
+                </button>
+              </div>
+            ) : (
+              <Link href="/auth" className="hidden sm:inline-flex btn btn-primary btn-sm px-4 py-1.5 text-xs">
+                Sign in
+              </Link>
+            )}
+
             {/* Mobile hamburger */}
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
@@ -156,6 +191,12 @@ export default function Navbar({ variant = "home", locationText }: Props) {
                 { href: "/", label: "Browse Listings", active: isHome },
                 { href: "/post", label: "Post a Listing", active: isPost },
                 { href: "/dashboard", label: "My Listings", active: isDashboard },
+                ...(user ? [
+                  { href: "/saved", label: "Saved Listings", active: pathname === "/saved" },
+                  { href: "/account", label: "My Account", active: pathname === "/account" },
+                ] : [
+                  { href: "/auth", label: "Sign In", active: pathname === "/auth" },
+                ]),
               ].map((item, i) => (
                 <motion.div
                   key={item.href}
@@ -172,6 +213,16 @@ export default function Navbar({ variant = "home", locationText }: Props) {
                   </Link>
                 </motion.div>
               ))}
+              {user && (
+                <div className="border-t border-[var(--color-border)]">
+                  <button
+                    onClick={async () => { await supabase.auth.signOut(); window.location.href = "/"; }}
+                    className="flex items-center w-full px-4 py-3 text-sm font-medium text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
+                  >
+                    Log out
+                  </button>
+                </div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>

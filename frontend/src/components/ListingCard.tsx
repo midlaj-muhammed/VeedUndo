@@ -1,9 +1,12 @@
-import { memo } from "react";
+"use client";
+
+import { memo, useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import type { ListingWithLocation } from "@/lib/types";
 import { HOUSE_TYPE_LABELS } from "@/lib/types";
 import { timeAgo, shareListing } from "@/lib/utils";
+import { supabase } from "@/lib/supabase";
 
 export function ListingCardSkeleton() {
   return (
@@ -16,6 +19,48 @@ export function ListingCardSkeleton() {
         <div className="skeleton h-3.5 w-3/4" />
       </div>
     </div>
+  );
+}
+
+function SaveButton({ listingId }: { listingId: string }) {
+  const [saved, setSaved] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      const uid = data.user?.id;
+      if (!uid) return;
+      setUserId(uid);
+      supabase.from("saved_listings").select("id").eq("user_id", uid).eq("listing_id", listingId).single().then(({ data }) => {
+        if (data) setSaved(true);
+      });
+    });
+  }, [listingId]);
+
+  async function toggle(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!userId) { window.location.href = "/auth"; return; }
+    if (saved) {
+      await supabase.from("saved_listings").delete().eq("user_id", userId).eq("listing_id", listingId);
+      setSaved(false);
+    } else {
+      await supabase.from("saved_listings").insert({ user_id: userId, listing_id: listingId });
+      setSaved(true);
+    }
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={toggle}
+      className="w-9 h-9 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center transition-all duration-300 hover:scale-110 hover:shadow-lg shadow-sm"
+      aria-label={saved ? "Unsave listing" : "Save listing"}
+    >
+      <svg className="w-4 h-4" fill={saved ? "currentColor" : "none"} viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ color: saved ? "#ef4444" : "#6b7280" }}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+      </svg>
+    </button>
   );
 }
 
@@ -37,6 +82,7 @@ export default memo(function ListingCard({ listing }: { listing: ListingWithLoca
           </div>
         )}
         <div className="absolute top-3 right-3 flex gap-2">
+          <SaveButton listingId={listing.id} />
           <button
             type="button"
             className="w-9 h-9 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center transition-all duration-300 hover:scale-110 hover:shadow-lg shadow-sm"
