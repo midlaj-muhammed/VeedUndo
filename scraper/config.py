@@ -7,7 +7,7 @@ SUPABASE_URL = os.environ["SUPABASE_URL"]
 SUPABASE_KEY = os.environ["SUPABASE_SERVICE_KEY"]
 
 # Groq
-GROQ_API_KEY = os.environ["GROQ_API_KEY"]
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
 GROQ_MODEL = "llama-3.3-70b-versatile"
 
 # Kerala districts
@@ -18,9 +18,11 @@ KERALA_DISTRICTS = [
 ]
 
 # Scraping
-REQUEST_DELAY = 2  # seconds between requests
+REQUEST_DELAY = 6  # seconds between requests (MagicBricks rate-limits aggressively)
+REQUEST_DELAY_SHORT = 3  # seconds for quick actions
 USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-MAX_LISTINGS_PER_SOURCE = 50
+MAX_LISTINGS_PER_SOURCE = 80
+MAX_PAGES_PER_CITY = 3
 
 # House type mapping (scraper label -> VeedUndo enum)
 HOUSE_TYPE_MAP = {

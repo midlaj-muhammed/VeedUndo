@@ -49,28 +49,88 @@ def _load_sub_districts():
     return _sub_district_cache
 
 
-# Map common city/area names to sub_district names in the database
+# Map common city/area names to sub_district names in the database.
+# Value can be a list of names to try in order.
 _CITY_NAME_MAP = {
     "trivandrum": "thiruvananthapuram",
     "tvm": "thiruvananthapuram",
-    " ernakulam": "ernakulam",
+    "ernakulam": ["ernakulam", "kochi"],
     "calicut": "kozhikode",
     "cal": "kozhikode",
-    "cochin": "kochi",
+    "cochin": ["kochi", "ernakulam"],
+    "kochi": ["kochi", "ernakulam"],
     "trichur": "thrissur",
     "tcr": "thrissur",
+    "thrissur": "thrissur",
     "kollam": "kollam",
     "quilon": "kollam",
     "alleppey": "alappuzha",
     "alappuzha": "alappuzha",
     "munnar": "idukki",
     "kottem": "kottayam",
+    "kottayam": "kottayam",
     "manjeri": "malappuram",
+    "malappuram": "malappuram",
     "kanhangad": "kasaragod",
+    "kasaragod": "kasaragod",
     "vatakara": "kozhikode",
+    "vadakara": "kozhikode",
     "kunnamangalam": "kozhikode",
     "payyannur": "kannur",
-    "vadakara": "kozhikode",
+    "kannur": "kannur",
+    "palakkad": "palakkad",
+    "palghat": "palakkad",
+    "wayanad": "wayanad",
+    "idukki": "idukki",
+    "pathanamthitta": "pathanamthitta",
+    "tripunithura": ["ernakulam", "kochi"],
+    "kakkanad": ["ernakulam", "kochi"],
+    "edappally": ["ernakulam", "kochi"],
+    "alamcode": "thiruvananthapuram",
+    "nemom": "thiruvananthapuram",
+    "vattiyoorkavu": "thiruvananthapuram",
+    "kazhakkoottam": "thiruvananthapuram",
+    "attingal": "thiruvananthapuram",
+    "neyyattinkara": "thiruvananthapuram",
+    "paravur": "kollam",
+    "kayamkulam": "alappuzha",
+    "changanassery": "kottayam",
+    "thuravoor": "alappuzha",
+    "chavakkad": "thrissur",
+    "guruvayur": "thrissur",
+    "kodungallur": "thrissur",
+    "irinjalakuda": "thrissur",
+    "kunnamkulam": "thrissur",
+    "pattambi": "palakkad",
+    "shoranur": "palakkad",
+    "ottpalam": "palakkad",
+    "mananthavady": "wayanad",
+    "sulthan bathery": "wayanad",
+    "kalpetta": "wayanad",
+    "tirur": "malappuram",
+    "perinthalmanna": "malappuram",
+    "nilambur": "malappuram",
+    "koyilandy": "kozhikode",
+    "kadirur": "kozhikode",
+    "thalassery": "kannur",
+    "mattannur": "kannur",
+    "iritty": "kannur",
+    "payyanur": "kannur",
+    "pala": "kottayam",
+    "vagamon": "idukki",
+    "thodupuzha": "idukki",
+    "kattappana": "idukki",
+    "kumily": "idukki",
+    "chengannur": "alappuzha",
+    "mavelikara": "alappuzha",
+    "cherthala": "alappuzha",
+    "aroor": "alappuzha",
+    "punalur": "kollam",
+    "sasthamkotta": "kollam",
+    "chengotta": "pathanamthitta",
+    "ranni": "pathanamthitta",
+    "aranmula": "pathanamthitta",
+    "thiruvalla": "pathanamthitta",
 }
 
 
@@ -100,8 +160,21 @@ def _match_sub_district(location_text: str) -> str | None:
     for word in words:
         if word in _CITY_NAME_MAP:
             mapped = _CITY_NAME_MAP[word]
-            if mapped in lookup:
-                return lookup[mapped]
+            # Handle list of candidates (try each in order)
+            candidates = mapped if isinstance(mapped, list) else [mapped]
+            for candidate in candidates:
+                if candidate in lookup:
+                    return lookup[candidate]
+
+    # Also try comma-separated parts (e.g. "tripunithura, ernakulam")
+    parts = [p.strip().rstrip(",.") for p in clean.split(",")]
+    for part in parts:
+        if part in _CITY_NAME_MAP:
+            mapped = _CITY_NAME_MAP[part]
+            candidates = mapped if isinstance(mapped, list) else [mapped]
+            for candidate in candidates:
+                if candidate in lookup:
+                    return lookup[candidate]
 
     # Substring match
     for name, uid in lookup.items():

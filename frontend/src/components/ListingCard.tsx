@@ -140,13 +140,13 @@ export default memo(function ListingCard({ listing }: { listing: ListingWithLoca
             href={listing.source_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-600 hover:text-amber-700 mb-2"
+            className="inline-flex items-center gap-1.5 w-full justify-center rounded-full bg-amber-500/10 text-amber-600 hover:bg-amber-500/20 px-4 py-2.5 text-sm font-semibold transition-all duration-300 cursor-pointer press-effect min-h-[44px]"
             onClick={(e) => e.stopPropagation()}
           >
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
             </svg>
-            View on MagicBricks
+            Contact on MagicBricks
           </a>
         )}
         <p className="text-xs text-[var(--color-text-dim)] tracking-wide">Posted {timeAgo(listing.created_at)}</p>
