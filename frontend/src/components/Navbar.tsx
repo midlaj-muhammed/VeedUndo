@@ -134,23 +134,25 @@ export default function Navbar({ variant = "home", locationText }: Props) {
 
             {/* Logged-in: heart + name + logout */}
             {user ? (
-              <div className="hidden sm:flex items-center gap-1">
+              <div className="hidden sm:flex items-center gap-2">
                 <Link href="/saved" className="w-9 h-9 rounded-full flex items-center justify-center text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-border)]/40 transition-colors" aria-label="Saved listings">
                   <svg className="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
                   </svg>
                 </Link>
-                <Link href="/account" className="flex items-center gap-1.5 h-9 px-3 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] text-sm font-medium text-[var(--color-text)] hover:border-[var(--color-text-dim)] transition-colors">
-                  <svg className="w-4 h-4 text-[var(--color-text-muted)]" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-                  </svg>
-                  {firstName}
-                </Link>
-                <button onClick={async () => { await supabase.auth.signOut(); window.location.href = "/"; }} className="w-9 h-9 rounded-full flex items-center justify-center text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-border)]/40 transition-colors" aria-label="Log out">
-                  <svg className="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
-                  </svg>
-                </button>
+                <div className="flex items-center h-9 pl-3 pr-1 rounded-full bg-[var(--color-muted)]">
+                  <Link href="/account" className="flex items-center gap-1.5 text-sm font-medium text-[var(--color-text)] mr-1">
+                    <svg className="w-4 h-4 text-[var(--color-text-muted)]" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                    </svg>
+                    {firstName}
+                  </Link>
+                  <button onClick={async () => { await supabase.auth.signOut(); window.location.href = "/"; }} className="w-8 h-8 rounded-full flex items-center justify-center text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-border)]/40 transition-colors" aria-label="Log out">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
+                    </svg>
+                  </button>
+                </div>
               </div>
             ) : (
               <Link href="/auth" className="hidden sm:inline-flex btn btn-primary btn-sm px-4 py-1.5 text-xs">
