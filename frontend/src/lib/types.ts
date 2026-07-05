@@ -43,6 +43,7 @@ export interface Listing {
   renewed_at: string;
   created_at: string;
   flag_count: number;
+  source: string | null;
 }
 
 export interface ListingWithLocation extends Listing {

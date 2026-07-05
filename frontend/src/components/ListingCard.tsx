@@ -85,10 +85,15 @@ export default memo(function ListingCard({ listing }: { listing: ListingWithLoca
           </div>
         )}
         {/* Mode badge */}
-        <div className="absolute top-3 left-3">
-          <span className={`rounded-full px-3 py-1 text-xs font-semibold tracking-wide backdrop-blur-md ${isSell ? "bg-green-500/90 text-white" : "bg-[var(--color-primary)]/90 text-white"}`}>
+        <div className="absolute top-3 left-3 flex flex-col gap-1.5">
+          <span className={`w-fit rounded-full px-3 py-1 text-xs font-semibold tracking-wide backdrop-blur-md ${isSell ? "bg-green-500/90 text-white" : "bg-[var(--color-primary)]/90 text-white"}`}>
             {LISTING_MODE_LABELS[listing.listing_mode || "rent"]}
           </span>
+          {listing.source === "scraped" && (
+            <span className="w-fit rounded-full px-2.5 py-0.5 text-[10px] font-semibold bg-amber-500/90 text-white backdrop-blur-md">
+              Scraped
+            </span>
+          )}
         </div>
         <div className="absolute top-3 right-3 flex gap-2">
           <SaveButton listingId={listing.id} />

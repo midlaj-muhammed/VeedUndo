@@ -16,7 +16,8 @@ def _get_client():
 def dedup_listings(listings: list[dict]) -> list[dict]:
     """Remove listings that already exist in the database.
 
-    Dedup strategy: match on title + location + listing_mode + price.
+    Dedup strategy: match on source_url (unique per listing).
+    Falls back to description+listing_mode if no source_url.
     Returns only new (non-duplicate) listings.
     """
     if not listings:
@@ -26,38 +27,50 @@ def dedup_listings(listings: list[dict]) -> list[dict]:
     db = client.table("listings")
 
     new_listings = []
-    seen_keys = set()
+    seen_urls = set()
 
     for listing in listings:
+        source_url = (listing.get("source_url") or "").strip()
         title = (listing.get("title") or "").strip()
-        location = (listing.get("location") or "").strip()
         mode = listing.get("listing_mode", "rent")
-        price = listing.get("price", 0)
 
-        if not title:
+        if not title and not source_url:
             continue
 
-        # Skip if already seen in this batch
-        dedup_key = f"{title.lower()}|{location.lower()}|{mode}|{price}"
-        if dedup_key in seen_keys:
+        # Skip if we've already seen this URL in the batch
+        dedup_key = source_url or f"{title.lower()}|{mode}"
+        if dedup_key in seen_urls:
             continue
-        seen_keys.add(dedup_key)
+        seen_urls.add(dedup_key)
 
         # Check database
         try:
-            result = (
-                db.select("id")
-                .ilike("title", f"%{title[:50]}%")
-                .eq("listing_mode", mode)
-                .limit(1)
-                .execute()
-            )
+            if source_url:
+                result = (
+                    db.select("id")
+                    .eq("source_url", source_url)
+                    .limit(1)
+                    .execute()
+                )
+            else:
+                # Fallback: match on description prefix + mode
+                desc_prefix = (listing.get("description") or "")[:60]
+                if not desc_prefix:
+                    new_listings.append(listing)
+                    continue
+                result = (
+                    db.select("id")
+                    .ilike("description", f"{desc_prefix}%")
+                    .eq("listing_mode", mode)
+                    .limit(1)
+                    .execute()
+                )
             if result.data:
-                print(f"  [dedup] Skipping duplicate: {title[:60]}")
+                print(f"  [dedup] Skipping duplicate: {title[:60] or source_url[:60]}")
                 continue
         except Exception as e:
-            print(f"  [dedup] DB check failed for '{title[:40]}': {e}")
-            # On DB error, include the listing anyway — don't lose data
+            print(f"  [dedup] DB check failed: {e}")
+            # On DB error, include the listing anyway
 
         new_listings.append(listing)
 

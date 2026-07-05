@@ -17,7 +17,7 @@ export default function Home() {
   const [recentListings, setRecentListings] = useState<ListingWithLocation[]>([]);
   const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState("");
-  const [filters, setFilters] = useState({ listingMode: "", propertyCategory: "", districtId: "", subDistrictId: "", rentRange: "", priceRange: "", houseType: "", posterType: "", search: "", sort: "" });
+  const [filters, setFilters] = useState({ listingMode: "", propertyCategory: "", districtId: "", subDistrictId: "", rentRange: "", priceRange: "", houseType: "", posterType: "", source: "", search: "", sort: "" });
   const PAGE_SIZE = 20;
 
   useEffect(() => {
@@ -48,6 +48,8 @@ export default function Home() {
     if (filters.propertyCategory) query = query.eq("property_category", filters.propertyCategory);
     if (filters.subDistrictId) query = query.eq("sub_district_id", filters.subDistrictId);
     else if (filters.districtId) query = query.eq("sub_districts.district_id", filters.districtId);
+    if (filters.source === "scraped") query = query.eq("source", "scraped");
+    else if (filters.source === "user") query = query.is("source", null);
     if (filters.houseType) query = query.eq("house_type", filters.houseType);
     if (filters.posterType) query = query.eq("poster_type", filters.posterType);
     if (filters.rentRange) { const [min, max] = filters.rentRange.split("-").map(Number); query = query.gte("rent_max", min).lte("rent_min", max); }

@@ -9,24 +9,35 @@ client = Groq(api_key=GROQ_API_KEY)
 SYSTEM_PROMPT = """You are a property listing parser. Extract structured data from raw scraped listings.
 
 Return a JSON array of objects with these fields:
-- title: string (clean property title)
-- price: number (monthly rent in INR, or sale price — numeric only, no commas)
+- title: string (clean property title — for dedup reference only)
 - listing_mode: "rent" or "sell"
 - house_type: one of ["1bhk","2bhk","3bhk","4bhk","single_room","studio","villa","independent_house","apartment","pg_room","plot","farm_house","commercial"]
 - bedrooms: number or null
 - area_sqft: number or null (convert from sqft/sq m if needed)
 - furnishing: "furnished" | "semi_furnished" | "unfurnished" | null
-- description: string (cleaned description)
-- location: string (area/locality, district)
+- description: string (cleaned description, max 500 chars)
+- location: string (area/locality, district — must be a Kerala location)
 - phone: string (10-digit Indian number) or null
 - image_urls: array of valid image URLs (filter out empty/invalid)
 - source_url: original listing URL or null
+
+For pricing, use these fields based on listing_mode:
+- If listing_mode is "rent":
+  - rent_min: number (monthly rent lower bound in INR, numeric only, no commas)
+  - rent_max: number (monthly rent upper bound in INR, or same as rent_min if single price)
+  - price: null
+- If listing_mode is "sell":
+  - price: number (sale price in INR, numeric only, no commas)
+  - rent_min: null
+  - rent_max: null
 
 Rules:
 - Infer listing_mode from keywords: "rent", "rental", "per month", "monthly" → rent; "sale", "sell", "lakh", "crore", "price" → sell
 - Map BHK labels to house_type using this mapping: "1 bhk"→"1bhk", "2 bhk"→"2bhk", "3 bhk"→"3bhk", "studio"→"studio", "villa"→"villa", "independent house"→"independent_house", "apartment"/"flat"→"apartment", "pg"/"paying guest"→"pg_room", "plot"/"land"→"plot", "farm house"→"farm_house", "commercial"/"shop"→"commercial"
 - If house_type cannot be determined, default to "apartment"
 - Clean prices: "₹15,000" → 15000, "1.5 Lakh" → 150000, "25 Lac" → 250000, "1.2 Cr" → 12000000
+- For rent ranges like "15,000 - 20,000", set rent_min=15000, rent_max=20000
+- For rent single price like "₹18,000/month", set rent_min=18000, rent_max=18000
 - Filter out non-Kerala locations
 - Return ONLY valid JSON array, no markdown code fences, no explanation"""
 
@@ -75,14 +86,12 @@ def parse_listings(raw_listings: list[dict]) -> list[dict]:
             print(f"  [parse error] batch {i // batch_size}: {e}")
             continue
 
-    # Post-process: normalize house_type
+    # Post-process: normalize house_type, set defaults
     for listing in all_parsed:
         raw_type = str(listing.get("house_type", "")).lower().strip()
         listing["house_type"] = HOUSE_TYPE_MAP.get(raw_type, "apartment")
 
-        # Ensure required fields exist
         listing.setdefault("title", "")
-        listing.setdefault("price", 0)
         listing.setdefault("listing_mode", "rent")
         listing.setdefault("bedrooms", None)
         listing.setdefault("area_sqft", None)
@@ -92,7 +101,18 @@ def parse_listings(raw_listings: list[dict]) -> list[dict]:
         listing.setdefault("phone", None)
         listing.setdefault("image_urls", [])
         listing.setdefault("source_url", None)
-        listing.setdefault("source", "unknown")
+        listing.setdefault("source", "scraped")
+
+        # Ensure pricing fields are consistent
+        mode = listing.get("listing_mode", "rent")
+        if mode == "rent":
+            listing.setdefault("rent_min", listing.get("price"))
+            listing.setdefault("rent_max", listing.get("price"))
+            listing["price"] = None
+        else:
+            listing.setdefault("price", 0)
+            listing["rent_min"] = None
+            listing["rent_max"] = None
 
     print(f"  [parser] Parsed {len(all_parsed)} listings from {len(raw_listings)} raw")
     return all_parsed

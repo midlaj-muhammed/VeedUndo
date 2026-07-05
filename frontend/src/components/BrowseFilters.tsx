@@ -16,6 +16,7 @@ export interface Filters {
   priceRange: string;
   houseType: string;
   posterType: string;
+  source: string;
   search: string;
   sort: string;
 }
@@ -107,11 +108,11 @@ export default function BrowseFilters({ districts, filters, onChange }: Props) {
   }
 
   function clearAll() {
-    onChange({ listingMode: filters.listingMode, propertyCategory: filters.propertyCategory, districtId: "", subDistrictId: "", rentRange: "", priceRange: "", houseType: "", posterType: "", search: "", sort: "" });
+    onChange({ listingMode: filters.listingMode, propertyCategory: filters.propertyCategory, districtId: "", subDistrictId: "", rentRange: "", priceRange: "", houseType: "", posterType: "", source: "", search: "", sort: "" });
     closeAll();
   }
 
-  const activeCount = [filters.districtId, filters.subDistrictId, filters.rentRange, filters.priceRange, filters.houseType, filters.posterType, filters.search].filter(Boolean).length;
+  const activeCount = [filters.districtId, filters.subDistrictId, filters.rentRange, filters.priceRange, filters.houseType, filters.posterType, filters.source, filters.search].filter(Boolean).length;
 
   async function saveSearch() {
     const { data: { session } } = await supabase.auth.getSession();
@@ -337,6 +338,27 @@ export default function BrowseFilters({ districts, filters, onChange }: Props) {
             </svg>
           )}
         </button>
+
+        {/* Source filter chip */}
+        <div className="flex gap-1 shrink-0">
+          {[
+            { value: "", label: "All" },
+            { value: "user", label: "Posted" },
+            { value: "scraped", label: "Scraped" },
+          ].map(({ value, label }) => (
+            <button
+              key={value}
+              onClick={() => update("source", value)}
+              className={`px-3 py-2 rounded-full text-sm font-medium transition-colors min-h-[40px] ${
+                (filters.source || "") === value
+                  ? "bg-[var(--color-primary)] text-white"
+                  : "bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:border-[var(--color-primary-light)]"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
 
       </div>
 
