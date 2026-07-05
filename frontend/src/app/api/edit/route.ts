@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
   if (authErr || !user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json();
-  const { listing_id, rent_min, rent_max, house_type, description, poster_phone, poster_whatsapp } = body;
+  const { listing_id, rent_min, rent_max, price, house_type, description, poster_phone, poster_whatsapp, bedrooms, furnishing, area_sqft } = body;
 
   if (!listing_id || typeof listing_id !== "string") {
     return NextResponse.json({ error: "listing_id required" }, { status: 400 });
@@ -62,6 +62,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "poster_whatsapp must be a string under 15 characters" }, { status: 400 });
     }
     update.poster_whatsapp = poster_whatsapp;
+  }
+  if (price !== undefined) {
+    update.price = price === null ? null : Number(price);
+  }
+  if (bedrooms !== undefined) {
+    update.bedrooms = bedrooms === null ? null : Number(bedrooms);
+  }
+  if (furnishing !== undefined) {
+    update.furnishing = furnishing;
+  }
+  if (area_sqft !== undefined) {
+    update.area_sqft = area_sqft === null ? null : Number(area_sqft);
   }
 
   if (Object.keys(update).length === 0) {

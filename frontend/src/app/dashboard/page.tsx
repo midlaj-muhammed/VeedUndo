@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import type { Listing } from "@/lib/types";
-import { HOUSE_TYPE_LABELS, LISTING_MODE_LABELS } from "@/lib/types";
+import { HOUSE_TYPE_LABELS, LISTING_MODE_LABELS, FURNISHING_LABELS } from "@/lib/types";
 import { daysLeft } from "@/lib/utils";
 import type { Session } from "@supabase/supabase-js";
 import Navbar from "@/components/Navbar";
@@ -17,14 +17,14 @@ export default function Dashboard() {
   const [error, setError] = useState("");
   const [feedback, setFeedback] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState({ rent_min: "", rent_max: "", house_type: "", description: "", poster_phone: "", poster_whatsapp: "" });
+  const [editForm, setEditForm] = useState({ rent_min: "", rent_max: "", price: "", house_type: "", description: "", poster_phone: "", poster_whatsapp: "", bedrooms: "", furnishing: "unfurnished", area_sqft: "" });
   const [saving, setSaving] = useState(false);
   const [statusFilter, setStatusFilter] = useState("All");
 
   useEffect(() => { supabase.auth.getSession().then(({ data }) => { setSession(data.session); if (data.session?.user?.email) loadListings(data.session.user.email); else setLoading(false); }); }, []);
 
   async function loadListings(email: string) {
-    const { data, error: err } = await supabase.from("listings").select("id, rent_min, rent_max, price, house_type, poster_type, status, listing_mode, expires_at, created_at, image_urls").eq("poster_email", email).order("created_at", { ascending: false });
+    const { data, error: err } = await supabase.from("listings").select("id, rent_min, rent_max, price, house_type, poster_type, status, listing_mode, bedrooms, furnishing, area_sqft, expires_at, created_at, image_urls").eq("poster_email", email).order("created_at", { ascending: false });
     if (err) setError("Failed to load listings.");
     setListings((data as Listing[]) || []);
     setLoading(false);
@@ -53,13 +53,13 @@ export default function Dashboard() {
 
   function startEdit(l: Listing) {
     setEditingId(l.id);
-    setEditForm({ rent_min: String(l.rent_min), rent_max: String(l.rent_max), house_type: l.house_type, description: "", poster_phone: "", poster_whatsapp: "" });
+    setEditForm({ rent_min: String(l.rent_min), rent_max: String(l.rent_max), price: String(l.price || ""), house_type: l.house_type, description: l.description || "", poster_phone: l.poster_phone || "", poster_whatsapp: l.poster_whatsapp || "", bedrooms: String(l.bedrooms || ""), furnishing: l.furnishing || "unfurnished", area_sqft: String(l.area_sqft || "") });
   }
 
   async function saveEdit() {
     if (!session || !editingId) return;
     setSaving(true);
-    const res = await fetch("/api/edit", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` }, body: JSON.stringify({ listing_id: editingId, ...editForm, rent_min: Number(editForm.rent_min), rent_max: Number(editForm.rent_max) }) });
+    const res = await fetch("/api/edit", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` }, body: JSON.stringify({ listing_id: editingId, ...editForm, rent_min: Number(editForm.rent_min), rent_max: Number(editForm.rent_max), price: editForm.price ? Number(editForm.price) : null, bedrooms: editForm.bedrooms ? Number(editForm.bedrooms) : null, furnishing: editForm.furnishing, area_sqft: editForm.area_sqft ? Number(editForm.area_sqft) : null }) });
     setSaving(false);
     if (res.ok) { showFeedback("Listing updated!"); setEditingId(null); if (session.user?.email) loadListings(session.user.email); }
     else { const data = await res.json(); showFeedback(data.error || "Failed to update"); }
@@ -146,6 +146,8 @@ export default function Dashboard() {
                     <p className="text-sm font-medium text-[var(--color-text)]">{HOUSE_TYPE_LABELS[l.house_type as keyof typeof HOUSE_TYPE_LABELS] || l.house_type} <span className={`ml-1 text-xs font-medium rounded-full px-2 py-0.5 ${l.listing_mode === "sell" ? "bg-green-500/10 text-green-600" : "bg-[var(--color-primary)]/10 text-[var(--color-primary)]"}`}>{LISTING_MODE_LABELS[l.listing_mode || "rent"]}</span></p>
                     <p className="text-xs text-[var(--color-text-muted)] mb-1">
                       {l.listing_mode === "sell" && l.price ? `₹${l.price.toLocaleString("en-IN")}` : `₹${l.rent_min.toLocaleString("en-IN")}–${l.rent_max.toLocaleString("en-IN")}/mo`}
+                      {l.bedrooms ? ` · ${l.bedrooms} Bed` : ""}
+                      {l.area_sqft ? ` · ${l.area_sqft} sqft` : ""}
                     </p>
                     <span className={`badge ${l.status === "active" ? "badge-active" : l.status === "expired" ? "badge-expired" : l.status === "flagged" ? "badge-flagged" : l.status === "sold" ? "badge-sold" : "badge-rented"}`}>{l.status}{l.status === "active" && ` · ${days}d left`}</span>
                     <div className="flex gap-2 flex-wrap mt-3">
@@ -184,6 +186,24 @@ export default function Dashboard() {
               <div>
                 <label className="block text-xs font-medium text-[var(--color-text-muted)] mb-1.5">Description</label>
                 <textarea value={editForm.description} onChange={(e) => setEditForm({ ...editForm, description: e.target.value })} rows={3} className="input resize-none" placeholder="Optional description update" />
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-[var(--color-text-muted)] mb-1.5">Bedrooms</label>
+                  <input type="number" min={0} value={editForm.bedrooms} onChange={(e) => setEditForm({ ...editForm, bedrooms: e.target.value })} className="input" placeholder="e.g. 3" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-[var(--color-text-muted)] mb-1.5">Area (sqft)</label>
+                  <input type="number" min={0} value={editForm.area_sqft} onChange={(e) => setEditForm({ ...editForm, area_sqft: e.target.value })} className="input" placeholder="e.g. 1200" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-[var(--color-text-muted)] mb-1.5">Furnishing</label>
+                  <select value={editForm.furnishing} onChange={(e) => setEditForm({ ...editForm, furnishing: e.target.value })} className="input">
+                    <option value="unfurnished">Unfurnished</option>
+                    <option value="semi_furnished">Semi-Furnished</option>
+                    <option value="furnished">Furnished</option>
+                  </select>
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>

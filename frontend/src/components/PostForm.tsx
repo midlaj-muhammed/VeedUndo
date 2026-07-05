@@ -4,8 +4,8 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "motion/react";
 import { supabase } from "@/lib/supabase";
-import type { District, SubDistrict, HouseType, PosterType, ListingMode } from "@/lib/types";
-import { HOUSE_TYPE_LABELS, RENT_HOUSE_TYPES, SELL_HOUSE_TYPES } from "@/lib/types";
+import type { District, SubDistrict, HouseType, PosterType, ListingMode, Furnishing } from "@/lib/types";
+import { HOUSE_TYPE_LABELS, RENT_HOUSE_TYPES, SELL_HOUSE_TYPES, FURNISHING_LABELS } from "@/lib/types";
 
 const POSTER_TYPES: { value: PosterType; label: string }[] = [
   { value: "owner", label: "Owner" },
@@ -148,6 +148,9 @@ export default function PostForm() {
   const [rentMax, setRentMax] = useState("");
   const [price, setPrice] = useState("");
   const [houseType, setHouseType] = useState<HouseType>("1bhk");
+  const [bedrooms, setBedrooms] = useState("");
+  const [furnishing, setFurnishing] = useState<Furnishing>("unfurnished");
+  const [areaSqft, setAreaSqft] = useState("");
   const [description, setDescription] = useState("");
   const [posterType, setPosterType] = useState<PosterType>("owner");
   const [phone, setPhone] = useState("");
@@ -245,6 +248,9 @@ export default function PostForm() {
         poster_email: session.user.email,
         poster_phone: phone || null,
         poster_whatsapp: whatsapp || null,
+        bedrooms: bedrooms ? parseInt(bedrooms) : null,
+        furnishing: furnishing,
+        area_sqft: areaSqft ? parseInt(areaSqft) : null,
         image_urls: urls,
         expires_at: new Date(Date.now() + (listingMode === "sell" ? 90 : 10) * 24 * 60 * 60 * 1000).toISOString(),
       });
@@ -405,6 +411,56 @@ export default function PostForm() {
             placeholder="Select type"
             required
           />
+          {/* Bedrooms — shown for residential properties */}
+          {!["plot", "commercial"].includes(houseType) && (
+            <div>
+              <label className="block text-xs font-medium uppercase tracking-wider text-[var(--color-text-muted)] mb-1.5">
+                Bedrooms
+              </label>
+              <div className="flex gap-2">
+                {["1", "2", "3", "4", "5+"].map((n) => (
+                  <button
+                    key={n}
+                    type="button"
+                    onClick={() => setBedrooms(bedrooms === n ? "" : n)}
+                    className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-all min-h-[44px] ${
+                      bedrooms === n
+                        ? "bg-[var(--color-primary)] text-white shadow-sm"
+                        : "bg-[var(--color-muted)] text-[var(--color-text)] hover:bg-[var(--color-border)]"
+                    }`}
+                  >
+                    {n}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          {/* Furnishing — shown for residential properties */}
+          {!["plot", "commercial"].includes(houseType) && (
+            <CustomSelect
+              label="Furnishing"
+              value={furnishing}
+              onChange={(v) => setFurnishing(v as Furnishing)}
+              options={Object.entries(FURNISHING_LABELS).map(([k, v]) => ({ value: k, label: v }))}
+              placeholder="Select furnishing"
+            />
+          )}
+          {/* Area — shown for sell mode or plot/commercial */}
+          {(listingMode === "sell" || ["plot", "commercial"].includes(houseType)) && (
+            <div>
+              <label className="block text-xs font-medium uppercase tracking-wider text-[var(--color-text-muted)] mb-1.5">
+                Area (sq ft)
+              </label>
+              <input
+                type="number"
+                min={0}
+                placeholder="e.g. 1200"
+                value={areaSqft}
+                onChange={(e) => setAreaSqft(e.target.value)}
+                className="input"
+              />
+            </div>
+          )}
         </div>
 
         {/* Section: Posting as */}

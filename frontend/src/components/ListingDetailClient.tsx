@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import type { ListingWithLocation } from "@/lib/types";
-import { HOUSE_TYPE_LABELS, LISTING_MODE_LABELS } from "@/lib/types";
+import { HOUSE_TYPE_LABELS, LISTING_MODE_LABELS, FURNISHING_LABELS } from "@/lib/types";
 import { timeAgo, shareListing } from "@/lib/utils";
 import ImageLightbox from "@/components/ImageLightbox";
 import Navbar from "@/components/Navbar";
@@ -71,7 +71,13 @@ export default function ListingDetailClient({ initialListing }: { initialListing
               {LISTING_MODE_LABELS[listing.listing_mode || "rent"]}
             </span>
           </div>
-          <p className="text-base text-[var(--color-text-muted)]">{HOUSE_TYPE_LABELS[listing.house_type as keyof typeof HOUSE_TYPE_LABELS] || listing.house_type} {locationText ? `· ${locationText}` : ""}</p>
+          <p className="text-base text-[var(--color-text-muted)]">
+            {HOUSE_TYPE_LABELS[listing.house_type as keyof typeof HOUSE_TYPE_LABELS] || listing.house_type}
+            {listing.bedrooms ? ` · ${listing.bedrooms} Bed` : ""}
+            {listing.area_sqft ? ` · ${listing.area_sqft} sqft` : ""}
+            {listing.furnishing ? ` · ${FURNISHING_LABELS[listing.furnishing]}` : ""}
+            {locationText ? ` · ${locationText}` : ""}
+          </p>
         </motion.div>
         <div className="flex flex-wrap items-center gap-3 mb-8 text-sm text-[var(--color-text-dim)]">
           <span className={`badge ${listing.poster_type === "owner" ? "badge-active" : "badge-flagged"}`}>{listing.poster_type === "owner" ? "Owner" : "Broker"}</span>

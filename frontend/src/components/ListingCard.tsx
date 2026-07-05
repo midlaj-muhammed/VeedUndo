@@ -4,7 +4,7 @@ import { memo, useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import type { ListingWithLocation } from "@/lib/types";
-import { HOUSE_TYPE_LABELS, LISTING_MODE_LABELS } from "@/lib/types";
+import { HOUSE_TYPE_LABELS, LISTING_MODE_LABELS, FURNISHING_LABELS } from "@/lib/types";
 import { timeAgo, shareListing } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 
@@ -116,7 +116,10 @@ export default memo(function ListingCard({ listing }: { listing: ListingWithLoca
             : `₹${listing.rent_min.toLocaleString("en-IN")}–${listing.rent_max.toLocaleString("en-IN")}/mo`}
         </p>
         <p className="text-sm text-[var(--color-text-muted)] mb-2">
-          {HOUSE_TYPE_LABELS[listing.house_type as keyof typeof HOUSE_TYPE_LABELS] || listing.house_type} {locationText ? `· ${locationText}` : ""}
+          {HOUSE_TYPE_LABELS[listing.house_type as keyof typeof HOUSE_TYPE_LABELS] || listing.house_type}
+          {listing.bedrooms ? ` · ${listing.bedrooms} Bed` : ""}
+          {listing.area_sqft ? ` · ${listing.area_sqft} sqft` : ""}
+          {locationText ? ` · ${locationText}` : ""}
         </p>
         {listing.description && (
           <p className="text-sm text-[var(--color-text-dim)] line-clamp-2 mb-2 leading-relaxed">{listing.description}</p>

@@ -25,6 +25,9 @@ export interface Listing {
   poster_whatsapp: string | null;
   status: ListingStatus;
   listing_mode: ListingMode;
+  bedrooms: number | null;
+  furnishing: Furnishing | null;
+  area_sqft: number | null;
   image_urls: string[];
   expires_at: string;
   renewed_at: string;
@@ -37,6 +40,14 @@ export interface ListingWithLocation extends Listing {
 }
 
 export type ListingMode = "rent" | "sell";
+
+export type Furnishing = "unfurnished" | "semi_furnished" | "furnished";
+
+export const FURNISHING_LABELS: Record<Furnishing, string> = {
+  unfurnished: "Unfurnished",
+  semi_furnished: "Semi-Furnished",
+  furnished: "Furnished",
+};
 
 export type HouseType =
   | "single_room"
