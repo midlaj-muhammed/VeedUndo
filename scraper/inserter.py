@@ -143,8 +143,8 @@ def insert_listings(listings: list[dict]) -> int:
             row["price"] = None
         else:
             row["price"] = listing.get("price") or 0
-            row["rent_min"] = None
-            row["rent_max"] = None
+            row["rent_min"] = 0
+            row["rent_max"] = 0
 
         try:
             db.insert(row).execute()
