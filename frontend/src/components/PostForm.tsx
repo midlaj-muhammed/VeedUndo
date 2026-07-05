@@ -4,8 +4,8 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "motion/react";
 import { supabase } from "@/lib/supabase";
-import type { District, SubDistrict, HouseType, PosterType } from "@/lib/types";
-import { HOUSE_TYPE_LABELS } from "@/lib/types";
+import type { District, SubDistrict, HouseType, PosterType, ListingMode } from "@/lib/types";
+import { HOUSE_TYPE_LABELS, RENT_HOUSE_TYPES, SELL_HOUSE_TYPES } from "@/lib/types";
 
 const POSTER_TYPES: { value: PosterType; label: string }[] = [
   { value: "owner", label: "Owner" },
@@ -143,8 +143,10 @@ export default function PostForm() {
   const [subDistricts, setSubDistricts] = useState<SubDistrict[]>([]);
   const [districtId, setDistrictId] = useState("");
   const [subDistrictId, setSubDistrictId] = useState("");
+  const [listingMode, setListingMode] = useState<ListingMode>("rent");
   const [rentMin, setRentMin] = useState("");
   const [rentMax, setRentMax] = useState("");
+  const [price, setPrice] = useState("");
   const [houseType, setHouseType] = useState<HouseType>("1bhk");
   const [description, setDescription] = useState("");
   const [posterType, setPosterType] = useState<PosterType>("owner");
@@ -201,8 +203,10 @@ export default function PostForm() {
     setError("");
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) { setError("Please sign in first."); return; }
-    if (!districtId || !rentMin || !rentMax) { setError("Please fill in all required fields."); return; }
-    if (!skipDupCheck && subDistrictId) {
+    if (!districtId) { setError("Please fill in all required fields."); return; }
+    if (listingMode === "rent" && (!rentMin || !rentMax)) { setError("Please enter rent range."); return; }
+    if (listingMode === "sell" && !price) { setError("Please enter the asking price."); return; }
+    if (!skipDupCheck && subDistrictId && listingMode === "rent") {
       const dupRes = await fetch("/api/duplicates", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -231,8 +235,10 @@ export default function PostForm() {
       const { urls } = await uploadRes.json();
       const { error: insertError } = await supabase.from("listings").insert({
         sub_district_id: subDistrictId || null,
-        rent_min: parseInt(rentMin),
-        rent_max: parseInt(rentMax),
+        listing_mode: listingMode,
+        rent_min: listingMode === "rent" ? parseInt(rentMin) : 0,
+        rent_max: listingMode === "rent" ? parseInt(rentMax) : 0,
+        price: listingMode === "sell" ? parseInt(price) : null,
         house_type: houseType,
         description: description || null,
         poster_type: posterType,
@@ -240,7 +246,7 @@ export default function PostForm() {
         poster_phone: phone || null,
         poster_whatsapp: whatsapp || null,
         image_urls: urls,
-        expires_at: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString(),
+        expires_at: new Date(Date.now() + (listingMode === "sell" ? 90 : 10) * 24 * 60 * 60 * 1000).toISOString(),
       });
       if (insertError) throw insertError;
       setSuccess(true);
@@ -264,7 +270,9 @@ export default function PostForm() {
     );
   }
 
-  const rentOptions = Object.entries(HOUSE_TYPE_LABELS).map(([k, v]) => ({ value: k, label: v }));
+  const rentOptions = RENT_HOUSE_TYPES.map((k) => ({ value: k, label: HOUSE_TYPE_LABELS[k] }));
+  const sellOptions = SELL_HOUSE_TYPES.map((k) => ({ value: k, label: HOUSE_TYPE_LABELS[k] }));
+  const houseTypeOptions = listingMode === "rent" ? rentOptions : sellOptions;
   const districtOptions = districts.map((d) => ({ value: d.id, label: d.name }));
   const subDistrictOptions = subDistricts.map((s) => ({ value: s.id, label: s.name }));
 
@@ -303,6 +311,20 @@ export default function PostForm() {
           </div>
         )}
 
+        {/* Listing mode toggle */}
+        <SegmentedControl
+          label="I want to"
+          value={listingMode}
+          onChange={(v) => {
+            setListingMode(v as ListingMode);
+            setHouseType(v === "rent" ? "1bhk" : "apartment");
+          }}
+          options={[
+            { value: "rent", label: "Rent out" },
+            { value: "sell", label: "Sell" },
+          ]}
+        />
+
         {/* Section: Location */}
         <div className="space-y-4">
           <p className="text-xs font-semibold uppercase tracking-widest text-[var(--color-text-dim)]">Location</p>
@@ -327,41 +349,59 @@ export default function PostForm() {
         {/* Section: Property */}
         <div className="space-y-4">
           <p className="text-xs font-semibold uppercase tracking-widest text-[var(--color-text-dim)]">Property</p>
-          <div className="grid grid-cols-2 gap-3">
+          {listingMode === "rent" ? (
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-medium uppercase tracking-wider text-[var(--color-text-muted)] mb-1.5">
+                  Min rent (₹) <span className="text-[var(--color-destructive)]">*</span>
+                </label>
+                <input
+                  type="number"
+                  required
+                  min={0}
+                  placeholder="3000"
+                  value={rentMin}
+                  onChange={(e) => setRentMin(e.target.value)}
+                  className="input"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium uppercase tracking-wider text-[var(--color-text-muted)] mb-1.5">
+                  Max rent (₹) <span className="text-[var(--color-destructive)]">*</span>
+                </label>
+                <input
+                  type="number"
+                  required
+                  min={0}
+                  placeholder="8000"
+                  value={rentMax}
+                  onChange={(e) => setRentMax(e.target.value)}
+                  className="input"
+                />
+              </div>
+            </div>
+          ) : (
             <div>
               <label className="block text-xs font-medium uppercase tracking-wider text-[var(--color-text-muted)] mb-1.5">
-                Min rent (₹) <span className="text-[var(--color-destructive)]">*</span>
+                Asking price (₹) <span className="text-[var(--color-destructive)]">*</span>
               </label>
               <input
                 type="number"
                 required
                 min={0}
-                placeholder="3000"
-                value={rentMin}
-                onChange={(e) => setRentMin(e.target.value)}
+                placeholder="4500000"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
                 className="input"
               />
+              <p className="text-xs text-[var(--color-text-dim)] mt-1">Enter total price in rupees (e.g. 45,00,000 for 45L)</p>
             </div>
-            <div>
-              <label className="block text-xs font-medium uppercase tracking-wider text-[var(--color-text-muted)] mb-1.5">
-                Max rent (₹) <span className="text-[var(--color-destructive)]">*</span>
-              </label>
-              <input
-                type="number"
-                required
-                min={0}
-                placeholder="8000"
-                value={rentMax}
-                onChange={(e) => setRentMax(e.target.value)}
-                className="input"
-              />
-            </div>
-          </div>
+          )}
           <CustomSelect
-            label="House type"
+            label="Property type"
             value={houseType}
             onChange={(v) => setHouseType(v as HouseType)}
-            options={rentOptions}
+            options={houseTypeOptions}
             placeholder="Select type"
             required
           />

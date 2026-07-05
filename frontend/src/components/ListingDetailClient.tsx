@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import type { ListingWithLocation } from "@/lib/types";
-import { HOUSE_TYPE_LABELS } from "@/lib/types";
+import { HOUSE_TYPE_LABELS, LISTING_MODE_LABELS } from "@/lib/types";
 import { timeAgo, shareListing } from "@/lib/utils";
 import ImageLightbox from "@/components/ImageLightbox";
 import Navbar from "@/components/Navbar";
@@ -21,6 +21,9 @@ export default function ListingDetailClient({ initialListing }: { initialListing
   if (!listing) return (<div className="flex flex-col min-h-dvh"><Navbar /><div className="flex-1 flex flex-col items-center justify-center gap-4 px-4"><p className="text-lg font-medium text-[var(--color-text)]">Listing not found</p><Link href="/" className="text-[var(--color-primary)] hover:underline min-h-[44px] flex items-center">Back to browse</Link></div></div>);
 
   const isRented = listing.status === "rented";
+  const isSold = listing.status === "sold";
+  const isUnavailable = isRented || isSold;
+  const isSell = listing.listing_mode === "sell";
   const subDistrict = listing.sub_districts;
   const district = subDistrict?.districts;
   const locationText = subDistrict ? (district ? `${subDistrict.name}, ${district.name}` : subDistrict.name) : district?.name || "";
@@ -42,8 +45,8 @@ export default function ListingDetailClient({ initialListing }: { initialListing
         {listing.image_urls?.length > 0 && (
           <div className="mb-6">
             <div className="relative w-full h-72 sm:h-96 rounded-2xl overflow-hidden cursor-zoom-in" onClick={() => setLightboxOpen(true)}>
-              <Image src={listing.image_urls[selectedImg]} alt={imgAlt} fill sizes="(max-width: 768px) 100vw, 768px" className={`object-cover ${isRented ? "grayscale" : ""}`} />
-              {isRented && (<div className="absolute inset-0 bg-black/30 flex items-center justify-center"><span className="rounded-full bg-white/90 px-5 py-2 text-sm font-bold text-gray-800">Rented</span></div>)}
+              <Image src={listing.image_urls[selectedImg]} alt={imgAlt} fill sizes="(max-width: 768px) 100vw, 768px" className={`object-cover ${isUnavailable ? "grayscale" : ""}`} />
+              {isUnavailable && (<div className="absolute inset-0 bg-black/30 flex items-center justify-center"><span className="rounded-full bg-white/90 px-5 py-2 text-sm font-bold text-gray-800">{isSold ? "Sold" : "Rented"}</span></div>)}
             </div>
             {listing.image_urls.length > 1 && (
               <div className="flex gap-2 mt-3 overflow-x-auto pb-2 scrollbar-hide">
@@ -57,18 +60,27 @@ export default function ListingDetailClient({ initialListing }: { initialListing
           </div>
         )}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 300, damping: 25, delay: 0.1 }} className="mb-6">
-          <h1 className="text-4xl sm:text-5xl font-bold text-[var(--color-text)] mb-2 tracking-[-0.03em]">
-            ₹{listing.rent_min.toLocaleString("en-IN")}–{listing.rent_max.toLocaleString("en-IN")}<span className="text-xl font-normal text-[var(--color-text-muted)]"> /mo</span>
-          </h1>
-          <p className="text-base text-[var(--color-text-muted)]">{HOUSE_TYPE_LABELS[listing.house_type]} {locationText ? `· ${locationText}` : ""}</p>
+          <div className="flex items-center gap-3 mb-2">
+            <h1 className="text-4xl sm:text-5xl font-bold text-[var(--color-text)] tracking-[-0.03em]">
+              {isSell && listing.price
+                ? `₹${listing.price.toLocaleString("en-IN")}`
+                : `₹${listing.rent_min.toLocaleString("en-IN")}–${listing.rent_max.toLocaleString("en-IN")}`}
+              {!isSell && <span className="text-xl font-normal text-[var(--color-text-muted)]"> /mo</span>}
+            </h1>
+            <span className={`rounded-full px-3 py-1 text-xs font-semibold tracking-wide ${isSell ? "bg-green-500/10 text-green-600 dark:text-green-400" : "bg-[var(--color-primary)]/10 text-[var(--color-primary)]"}`}>
+              {LISTING_MODE_LABELS[listing.listing_mode || "rent"]}
+            </span>
+          </div>
+          <p className="text-base text-[var(--color-text-muted)]">{HOUSE_TYPE_LABELS[listing.house_type as keyof typeof HOUSE_TYPE_LABELS] || listing.house_type} {locationText ? `· ${locationText}` : ""}</p>
         </motion.div>
         <div className="flex flex-wrap items-center gap-3 mb-8 text-sm text-[var(--color-text-dim)]">
           <span className={`badge ${listing.poster_type === "owner" ? "badge-active" : "badge-flagged"}`}>{listing.poster_type === "owner" ? "Owner" : "Broker"}</span>
           <span className="text-xs tracking-wide">Posted {timeAgo(listing.created_at)}</span>
         </div>
         {isRented && (<div className="mb-6 rounded-2xl border border-green-500/20 bg-green-500/5 px-5 py-4 flex items-center gap-3"><svg className="w-6 h-6 text-green-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg><div><p className="font-semibold text-green-600 dark:text-green-400">This listing has been rented</p><p className="text-sm text-[var(--color-text-muted)]">The poster has marked this property as no longer available.</p></div></div>)}
+        {isSold && (<div className="mb-6 rounded-2xl border border-blue-500/20 bg-blue-500/5 px-5 py-4 flex items-center gap-3"><svg className="w-6 h-6 text-blue-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg><div><p className="font-semibold text-blue-600 dark:text-blue-400">This property has been sold</p><p className="text-sm text-[var(--color-text-muted)]">The poster has marked this property as sold.</p></div></div>)}
         {listing.description && (<div className="mb-6"><h2 className="font-semibold text-[var(--color-text)] mb-2">Description</h2><p className="text-[var(--color-text-dim)] whitespace-pre-wrap leading-relaxed">{listing.description}</p></div>)}
-        {!isRented && (
+        {!isUnavailable && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 300, damping: 25, delay: 0.3 }} className="card-base rounded-2xl p-6 mb-8">
             <h2 className="font-semibold text-[var(--color-text)] mb-4 text-lg">Contact</h2>
             <div className="space-y-3">
@@ -79,7 +91,7 @@ export default function ListingDetailClient({ initialListing }: { initialListing
             </div>
           </motion.div>
         )}
-        {!isRented && (<div className="text-center pb-4">{flagged ? (<p className="text-sm text-[var(--color-text-muted)]">Thanks for reporting.</p>) : (<button onClick={handleFlag} disabled={flagging} className="text-sm text-[var(--color-text-dim)] hover:text-[var(--color-destructive)] underline disabled:opacity-50 cursor-pointer min-h-[44px]">{flagging ? "Reporting..." : "No longer available?"}</button>)}</div>)}
+        {!isUnavailable && (<div className="text-center pb-4">{flagged ? (<p className="text-sm text-[var(--color-text-muted)]">Thanks for reporting.</p>) : (<button onClick={handleFlag} disabled={flagging} className="text-sm text-[var(--color-text-dim)] hover:text-[var(--color-destructive)] underline disabled:opacity-50 cursor-pointer min-h-[44px]">{flagging ? "Reporting..." : "No longer available?"}</button>)}</div>)}
       </main>
       {lightboxOpen && listing.image_urls?.length > 0 && (<ImageLightbox images={listing.image_urls} alt={imgAlt} initialIndex={selectedImg} onClose={() => setLightboxOpen(false)} />)}
     </div>

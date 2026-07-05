@@ -22,8 +22,13 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const district = subDistrict?.districts;
   const locationText = subDistrict ? (district ? `${subDistrict.name}, ${district.name}` : subDistrict.name) : district?.name || "";
   const houseType = HOUSE_TYPE_LABELS[listing.house_type as HouseType] || "Property";
-  const title = `₹${listing.rent_min.toLocaleString("en-IN")}–${listing.rent_max.toLocaleString("en-IN")}/mo ${houseType} in ${locationText}`;
-  const description = listing.description || `${houseType} for rent in ${locationText}. ₹${listing.rent_min.toLocaleString("en-IN")}–${listing.rent_max.toLocaleString("en-IN")} per month on VeedUndo.`;
+  const isSell = listing.listing_mode === "sell";
+  const title = isSell && listing.price
+    ? `₹${listing.price.toLocaleString("en-IN")} ${houseType} in ${locationText} | For Sale`
+    : `₹${listing.rent_min.toLocaleString("en-IN")}–${listing.rent_max.toLocaleString("en-IN")}/mo ${houseType} in ${locationText}`;
+  const description = listing.description || isSell
+    ? `${houseType} for sale in ${locationText}. ₹${listing.price?.toLocaleString("en-IN")} on VeedUndo.`
+    : `${houseType} for rent in ${locationText}. ₹${listing.rent_min.toLocaleString("en-IN")}–${listing.rent_max.toLocaleString("en-IN")} per month on VeedUndo.`;
   const imageUrl = listing.image_urls?.[0];
 
   return {
@@ -56,23 +61,26 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
 
   const houseType = HOUSE_TYPE_LABELS[listing.house_type as HouseType] || "Property";
   const locationText = listing.sub_districts ? (listing.sub_districts.districts ? `${listing.sub_districts.name}, ${listing.sub_districts.districts.name}` : listing.sub_districts.name) : "";
+  const isSell = listing.listing_mode === "sell";
 
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
     name: `${houseType} in ${locationText}`,
-    description: listing.description || `${houseType} for rent in ${locationText}`,
+    description: listing.description || `${houseType} for ${isSell ? "sale" : "rent"} in ${locationText}`,
     image: listing.image_urls?.[0],
     offers: {
       "@type": "Offer",
-      price: listing.rent_min,
+      price: isSell ? listing.price : listing.rent_min,
       priceCurrency: "INR",
-      priceSpecification: {
-        "@type": "UnitPriceSpecification",
-        price: listing.rent_min,
-        priceCurrency: "INR",
-        billingDuration: "P1M",
-      },
+      ...(isSell ? {} : {
+        priceSpecification: {
+          "@type": "UnitPriceSpecification",
+          price: listing.rent_min,
+          priceCurrency: "INR",
+          billingDuration: "P1M",
+        },
+      }),
     },
   };
 

@@ -16,6 +16,7 @@ export interface Listing {
   sub_district_id: string;
   rent_min: number;
   rent_max: number;
+  price: number | null;
   house_type: HouseType;
   description: string | null;
   poster_type: PosterType;
@@ -23,6 +24,7 @@ export interface Listing {
   poster_phone: string | null;
   poster_whatsapp: string | null;
   status: ListingStatus;
+  listing_mode: ListingMode;
   image_urls: string[];
   expires_at: string;
   renewed_at: string;
@@ -34,17 +36,26 @@ export interface ListingWithLocation extends Listing {
   sub_districts: SubDistrict & { districts: District };
 }
 
+export type ListingMode = "rent" | "sell";
+
 export type HouseType =
   | "single_room"
+  | "pg_room"
   | "1bhk"
   | "2bhk"
   | "3bhk"
   | "4bhk"
-  | "villa";
+  | "apartment"
+  | "independent_house"
+  | "studio"
+  | "villa"
+  | "plot"
+  | "commercial"
+  | "farm_house";
 
 export type PosterType = "owner" | "broker";
 
-export type ListingStatus = "active" | "expired" | "flagged" | "rented";
+export type ListingStatus = "active" | "expired" | "flagged" | "rented" | "sold";
 
 export interface ListingFlag {
   id: string;
@@ -55,9 +66,44 @@ export interface ListingFlag {
 
 export const HOUSE_TYPE_LABELS: Record<HouseType, string> = {
   single_room: "Single Room",
+  pg_room: "PG / Paying Guest",
   "1bhk": "1 BHK",
   "2bhk": "2 BHK",
   "3bhk": "3 BHK",
   "4bhk": "4 BHK",
+  apartment: "Apartment",
+  independent_house: "Independent House",
+  studio: "Studio",
   villa: "Villa",
+  plot: "Plot / Land",
+  commercial: "Commercial",
+  farm_house: "Farm House",
+};
+
+export const RENT_HOUSE_TYPES: HouseType[] = [
+  "single_room",
+  "pg_room",
+  "1bhk",
+  "2bhk",
+  "3bhk",
+  "4bhk",
+  "apartment",
+  "independent_house",
+  "studio",
+  "villa",
+];
+
+export const SELL_HOUSE_TYPES: HouseType[] = [
+  "apartment",
+  "independent_house",
+  "villa",
+  "plot",
+  "commercial",
+  "farm_house",
+  "studio",
+];
+
+export const LISTING_MODE_LABELS: Record<ListingMode, string> = {
+  rent: "For Rent",
+  sell: "For Sale",
 };

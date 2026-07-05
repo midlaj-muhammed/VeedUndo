@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import type { Listing } from "@/lib/types";
-import { HOUSE_TYPE_LABELS } from "@/lib/types";
+import { HOUSE_TYPE_LABELS, LISTING_MODE_LABELS } from "@/lib/types";
 import { daysLeft } from "@/lib/utils";
 import type { Session } from "@supabase/supabase-js";
 import Navbar from "@/components/Navbar";
@@ -24,7 +24,7 @@ export default function Dashboard() {
   useEffect(() => { supabase.auth.getSession().then(({ data }) => { setSession(data.session); if (data.session?.user?.email) loadListings(data.session.user.email); else setLoading(false); }); }, []);
 
   async function loadListings(email: string) {
-    const { data, error: err } = await supabase.from("listings").select("id, rent_min, rent_max, house_type, poster_type, status, expires_at, created_at, image_urls").eq("poster_email", email).order("created_at", { ascending: false });
+    const { data, error: err } = await supabase.from("listings").select("id, rent_min, rent_max, price, house_type, poster_type, status, listing_mode, expires_at, created_at, image_urls").eq("poster_email", email).order("created_at", { ascending: false });
     if (err) setError("Failed to load listings.");
     setListings((data as Listing[]) || []);
     setLoading(false);
@@ -89,6 +89,7 @@ export default function Dashboard() {
               { full: "Expired", short: "Exp" },
               { full: "Flagged", short: "Flag" },
               { full: "Rented", short: "Rented" },
+              { full: "Sold", short: "Sold" },
             ].map(({ full, short }) => {
               const count = full === "All" ? listings.length : listings.filter(l => l.status === full.toLowerCase()).length;
               return (
@@ -142,13 +143,16 @@ export default function Dashboard() {
                 <div className="flex items-start gap-4">
                   {l.image_urls?.[0] && <img src={l.image_urls[0]} alt="" className="w-16 h-16 rounded-xl object-cover shrink-0" />}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-[var(--color-text)]">{HOUSE_TYPE_LABELS[l.house_type]}</p>
-                    <p className="text-xs text-[var(--color-text-muted)] mb-1">₹{l.rent_min.toLocaleString("en-IN")}–{l.rent_max.toLocaleString("en-IN")}/mo</p>
-                    <span className={`badge ${l.status === "active" ? "badge-active" : l.status === "expired" ? "badge-expired" : l.status === "flagged" ? "badge-flagged" : "badge-rented"}`}>{l.status}{l.status === "active" && ` · ${days}d left`}</span>
+                    <p className="text-sm font-medium text-[var(--color-text)]">{HOUSE_TYPE_LABELS[l.house_type as keyof typeof HOUSE_TYPE_LABELS] || l.house_type} <span className={`ml-1 text-xs font-medium rounded-full px-2 py-0.5 ${l.listing_mode === "sell" ? "bg-green-500/10 text-green-600" : "bg-[var(--color-primary)]/10 text-[var(--color-primary)]"}`}>{LISTING_MODE_LABELS[l.listing_mode || "rent"]}</span></p>
+                    <p className="text-xs text-[var(--color-text-muted)] mb-1">
+                      {l.listing_mode === "sell" && l.price ? `₹${l.price.toLocaleString("en-IN")}` : `₹${l.rent_min.toLocaleString("en-IN")}–${l.rent_max.toLocaleString("en-IN")}/mo`}
+                    </p>
+                    <span className={`badge ${l.status === "active" ? "badge-active" : l.status === "expired" ? "badge-expired" : l.status === "flagged" ? "badge-flagged" : l.status === "sold" ? "badge-sold" : "badge-rented"}`}>{l.status}{l.status === "active" && ` · ${days}d left`}</span>
                     <div className="flex gap-2 flex-wrap mt-3">
                       {l.status === "active" && <button onClick={() => renew(l.id)} className="btn btn-sm btn-secondary press-effect">Renew</button>}
                       {l.status === "flagged" && <button onClick={() => confirmAvailable(l.id)} className="btn btn-sm btn-primary press-effect">Confirm</button>}
-                      {(l.status === "active" || l.status === "expired") && <button onClick={() => markRented(l.id)} className="btn btn-sm btn-primary press-effect">Rented</button>}
+                      {(l.status === "active" || l.status === "expired") && l.listing_mode !== "sell" && <button onClick={() => markRented(l.id)} className="btn btn-sm btn-primary press-effect">Rented</button>}
+                      {(l.status === "active" || l.status === "expired") && l.listing_mode === "sell" && <button onClick={() => markRented(l.id)} className="btn btn-sm btn-primary press-effect">Sold</button>}
                       <button onClick={() => startEdit(l)} className="btn btn-sm btn-secondary press-effect">Edit</button>
                       <button onClick={() => deleteListing(l.id)} className="btn btn-sm btn-destructive press-effect">Delete</button>
                     </div>

@@ -4,7 +4,7 @@ import { memo, useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import type { ListingWithLocation } from "@/lib/types";
-import { HOUSE_TYPE_LABELS } from "@/lib/types";
+import { HOUSE_TYPE_LABELS, LISTING_MODE_LABELS } from "@/lib/types";
 import { timeAgo, shareListing } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 
@@ -66,21 +66,30 @@ function SaveButton({ listingId }: { listingId: string }) {
 
 export default memo(function ListingCard({ listing }: { listing: ListingWithLocation }) {
   const isRented = listing.status === "rented";
+  const isSold = listing.status === "sold";
+  const isUnavailable = isRented || isSold;
+  const isSell = listing.listing_mode === "sell";
   const subDistrict = listing.sub_districts;
   const district = subDistrict?.districts;
   const locationText = subDistrict ? (district ? `${subDistrict.name}, ${district.name}` : subDistrict.name) : district?.name || "";
   const imgAlt = `${HOUSE_TYPE_LABELS[listing.house_type]} in ${locationText}`;
 
   return (
-    <Link href={`/listing/${listing.id}`} className={`card-base group block rounded-2xl overflow-hidden ${isRented ? "opacity-70" : ""}`}>
+    <Link href={`/listing/${listing.id}`} className={`card-base group block rounded-2xl overflow-hidden ${isUnavailable ? "opacity-70" : ""}`}>
       <div className="relative w-full h-56 overflow-hidden">
         {listing.image_urls?.[0] ? (
-          <Image src={listing.image_urls[0]} alt={imgAlt} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" className={`object-cover transition-transform duration-500 cubic-bezier(0.16, 1, 0.3, 1) ${isRented ? "grayscale" : "group-hover:scale-105"}`} />
+          <Image src={listing.image_urls[0]} alt={imgAlt} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" className={`object-cover transition-transform duration-500 cubic-bezier(0.16, 1, 0.3, 1) ${isUnavailable ? "grayscale" : "group-hover:scale-105"}`} />
         ) : (
           <div className="w-full h-full bg-[var(--color-muted)] flex items-center justify-center">
             <svg className="w-12 h-12 text-[var(--color-text-dim)]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3h.008v.008h-.008V10.5zm0 3h.008v.008h-.008V13.5zm0 3h.008v.008h-.008V16.5z" /></svg>
           </div>
         )}
+        {/* Mode badge */}
+        <div className="absolute top-3 left-3">
+          <span className={`rounded-full px-3 py-1 text-xs font-semibold tracking-wide backdrop-blur-md ${isSell ? "bg-green-500/90 text-white" : "bg-[var(--color-primary)]/90 text-white"}`}>
+            {LISTING_MODE_LABELS[listing.listing_mode || "rent"]}
+          </span>
+        </div>
         <div className="absolute top-3 right-3 flex gap-2">
           <SaveButton listingId={listing.id} />
           <button
@@ -94,18 +103,20 @@ export default memo(function ListingCard({ listing }: { listing: ListingWithLoca
             </svg>
           </button>
         </div>
-        {isRented && (
+        {isUnavailable && (
           <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-            <span className="rounded-full bg-white/90 px-5 py-2 text-sm font-bold text-gray-800 tracking-wide">Rented</span>
+            <span className="rounded-full bg-white/90 px-5 py-2 text-sm font-bold text-gray-800 tracking-wide">{isSold ? "Sold" : "Rented"}</span>
           </div>
         )}
       </div>
       <div className="p-4">
         <p className="text-xl font-bold text-[var(--color-text)] mb-1 tracking-[-0.02em]">
-          ₹{listing.rent_min.toLocaleString("en-IN")}–{listing.rent_max.toLocaleString("en-IN")}/mo
+          {isSell && listing.price
+            ? `₹${listing.price.toLocaleString("en-IN")}`
+            : `₹${listing.rent_min.toLocaleString("en-IN")}–${listing.rent_max.toLocaleString("en-IN")}/mo`}
         </p>
         <p className="text-sm text-[var(--color-text-muted)] mb-2">
-          {HOUSE_TYPE_LABELS[listing.house_type]} {locationText ? `· ${locationText}` : ""}
+          {HOUSE_TYPE_LABELS[listing.house_type as keyof typeof HOUSE_TYPE_LABELS] || listing.house_type} {locationText ? `· ${locationText}` : ""}
         </p>
         {listing.description && (
           <p className="text-sm text-[var(--color-text-dim)] line-clamp-2 mb-2 leading-relaxed">{listing.description}</p>

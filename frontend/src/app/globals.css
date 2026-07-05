@@ -300,6 +300,8 @@ a, button, select, input, textarea {
 }
 .badge-active { background: var(--pastel-green); color: var(--pastel-green-text); }
 .badge-rented { background: var(--pastel-blue); color: var(--pastel-blue-text); }
+.badge-sold { background: #dbeafe; color: #1e40af; }
+.dark .badge-sold { background: rgba(59,130,246,0.15); color: #60a5fa; }
 .badge-expired { background: var(--color-muted); color: var(--color-text-dim); }
 .badge-flagged { background: var(--pastel-yellow); color: var(--pastel-yellow-text); }
 

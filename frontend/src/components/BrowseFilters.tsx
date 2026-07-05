@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import type { District, SubDistrict } from "@/lib/types";
-import { HOUSE_TYPE_LABELS } from "@/lib/types";
+import type { District, SubDistrict, ListingMode } from "@/lib/types";
+import { HOUSE_TYPE_LABELS, RENT_HOUSE_TYPES, SELL_HOUSE_TYPES } from "@/lib/types";
 import { DropdownPortal, useDropdownPosition } from "@/components/DropdownPortal";
+import { motion } from "motion/react";
 
 export interface Filters {
+  listingMode: string;
   districtId: string;
   subDistrictId: string;
   rentRange: string;
@@ -70,7 +72,7 @@ export default function BrowseFilters({ districts, filters, onChange }: Props) {
   }
 
   function clearAll() {
-    onChange({ districtId: "", subDistrictId: "", rentRange: "", houseType: "", posterType: "", search: "", sort: "" });
+    onChange({ listingMode: filters.listingMode, districtId: "", subDistrictId: "", rentRange: "", houseType: "", posterType: "", search: "", sort: "" });
     closeAll();
   }
 
@@ -86,6 +88,38 @@ export default function BrowseFilters({ districts, filters, onChange }: Props) {
 
   return (
     <div className="mb-6">
+      {/* Listing mode tabs */}
+      <div className="flex gap-1 mb-4 p-1 bg-[var(--color-muted)] rounded-full w-fit">
+        {[
+          { value: "", label: "All" },
+          { value: "rent", label: "For Rent" },
+          { value: "sell", label: "For Sale" },
+        ].map(({ value, label }) => (
+          <button
+            key={value}
+            onClick={() => {
+              const next = { ...filters, listingMode: value, houseType: "" };
+              onChange(next);
+              closeAll();
+            }}
+            className={`relative px-5 py-2 text-sm font-medium rounded-full transition-colors min-h-[36px] ${
+              filters.listingMode === value
+                ? "text-white"
+                : "text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
+            }`}
+          >
+            {filters.listingMode === value && (
+              <motion.div
+                layoutId="listing-mode-tab"
+                className="absolute inset-0 rounded-full bg-[var(--color-primary)]"
+                transition={{ type: "spring", stiffness: 500, damping: 30 }}
+              />
+            )}
+            <span className="relative z-10">{label}</span>
+          </button>
+        ))}
+      </div>
+
       {/* Search + Sort row */}
       <div className="flex gap-2 mb-3">
         <div className="relative flex-1">
@@ -261,8 +295,8 @@ export default function BrowseFilters({ districts, filters, onChange }: Props) {
         className={dropdownBase}
       >
         <button onClick={() => update("houseType", "")} className="w-full text-left px-4 py-2.5 text-sm hover:bg-[var(--color-muted)] text-[var(--color-text-muted)]">Any Type</button>
-        {Object.entries(HOUSE_TYPE_LABELS).map(([k, v]) => (
-          <button key={k} onClick={() => update("houseType", k)} className={`w-full text-left px-4 py-2.5 text-sm hover:bg-[var(--color-muted)] ${filters.houseType === k ? "text-[var(--color-primary)] font-medium" : "text-[var(--color-text)]"}`}>{v}</button>
+        {(filters.listingMode === "sell" ? SELL_HOUSE_TYPES : RENT_HOUSE_TYPES).map((k) => (
+          <button key={k} onClick={() => update("houseType", k)} className={`w-full text-left px-4 py-2.5 text-sm hover:bg-[var(--color-muted)] ${filters.houseType === k ? "text-[var(--color-primary)] font-medium" : "text-[var(--color-text)]"}`}>{HOUSE_TYPE_LABELS[k]}</button>
         ))}
       </DropdownPortal>
 
