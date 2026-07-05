@@ -234,7 +234,7 @@ def insert_listings(listings: list[dict]) -> int:
             "area_sqft": listing.get("area_sqft"),
             "image_urls": listing.get("image_urls") or [],
             "source": "scraped",
-            "source_url": listing.get("url") or None,
+            "source_url": listing.get("source_url") or listing.get("url") or None,
             "status": "active",
             "expires_at": (
                 datetime.now(timezone.utc).replace(
