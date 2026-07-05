@@ -67,19 +67,37 @@ export default function RootLayout({
           {children}
           <footer className="hidden sm:block border-t border-[var(--color-border)] bg-[var(--color-muted)] mt-auto">
             <div className="max-w-5xl mx-auto px-6 py-12">
-              <div className="flex flex-col sm:flex-row items-start justify-between gap-8">
-                <div className="flex flex-col gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 mb-10">
+                <div className="col-span-2 sm:col-span-1">
                   <Logo size="large" />
-                  <p className="text-sm text-[var(--color-text-muted)] max-w-xs leading-relaxed">Kerala&apos;s hyperlocal rental board.</p>
+                  <p className="text-sm text-[var(--color-text-muted)] mt-3 max-w-xs leading-relaxed">Kerala&apos;s hyperlocal rental board. Find your next home.</p>
                 </div>
-                <div className="flex items-center gap-6 text-sm text-[var(--color-text-muted)]">
-                  <Link href="/" className="hover:text-[var(--color-text)] transition-colors duration-200">Browse</Link>
-                  <Link href="/post" className="hover:text-[var(--color-text)] transition-colors duration-200">Post</Link>
-                  <Link href="/dashboard" className="hover:text-[var(--color-text)] transition-colors duration-200">Dashboard</Link>
+                <div>
+                  <h3 className="text-xs font-semibold tracking-[0.15em] uppercase text-[var(--color-text-dim)] mb-3">Explore</h3>
+                  <ul className="space-y-2 text-sm text-[var(--color-text-muted)]">
+                    <li><Link href="/" className="hover:text-[var(--color-text)] transition-colors">Browse Listings</Link></li>
+                    <li><Link href="/post" className="hover:text-[var(--color-text)] transition-colors">Post a Listing</Link></li>
+                    <li><Link href="/dashboard" className="hover:text-[var(--color-text)] transition-colors">My Listings</Link></li>
+                  </ul>
+                </div>
+                <div>
+                  <h3 className="text-xs font-semibold tracking-[0.15em] uppercase text-[var(--color-text-dim)] mb-3">Company</h3>
+                  <ul className="space-y-2 text-sm text-[var(--color-text-muted)]">
+                    <li><Link href="/about" className="hover:text-[var(--color-text)] transition-colors">About</Link></li>
+                    <li><Link href="/contact" className="hover:text-[var(--color-text)] transition-colors">Contact</Link></li>
+                  </ul>
+                </div>
+                <div>
+                  <h3 className="text-xs font-semibold tracking-[0.15em] uppercase text-[var(--color-text-dim)] mb-3">Legal</h3>
+                  <ul className="space-y-2 text-sm text-[var(--color-text-muted)]">
+                    <li><Link href="/privacy" className="hover:text-[var(--color-text)] transition-colors">Privacy Policy</Link></li>
+                    <li><Link href="/terms" className="hover:text-[var(--color-text)] transition-colors">Terms of Service</Link></li>
+                  </ul>
                 </div>
               </div>
-              <div className="mt-8 pt-6 border-t border-[var(--color-border)] text-xs text-[var(--color-text-dim)]">
-                &copy; {new Date().getFullYear()} VeedUndo
+              <div className="pt-6 border-t border-[var(--color-border)] flex items-center justify-between text-xs text-[var(--color-text-dim)]">
+                <span>&copy; {new Date().getFullYear()} VeedUndo</span>
+                <span>Made for Kerala</span>
               </div>
             </div>
           </footer>
