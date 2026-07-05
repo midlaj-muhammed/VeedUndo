@@ -60,7 +60,7 @@ export default function Home() {
     query = query.order(sortCol, { ascending: filters.sort === "price_asc", nullsFirst: filters.sort.startsWith("price") ? false : undefined });
     query = query.range(offset, offset + PAGE_SIZE - 1);
     const { data, error: err } = await query;
-    if (err) { setError("Failed to load listings."); setListings([]); }
+    if (err) { console.error("Supabase query error:", err.message, err.details, err.hint); setError("Failed to load listings."); setListings([]); }
     else {
       const rows = (data as ListingWithLocation[]) || [];
       setListings(offset === 0 ? rows : (prev) => [...prev, ...rows]);
