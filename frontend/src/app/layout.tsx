@@ -34,12 +34,29 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "VeedUndo - Kerala Rental Board",
+  title: {
+    default: "VeedUndo - Kerala Rental Board",
+    template: "%s | VeedUndo",
+  },
   description:
-    "Kerala's hyperlocal rental status board. Find houses for rent near you, fast.",
+    "Kerala's hyperlocal rental board. Find houses, apartments, and rooms for rent directly from owners.",
   icons: {
     icon: "/favicon.svg",
   },
+  openGraph: {
+    title: "VeedUndo - Kerala Rental Board",
+    description: "Kerala's hyperlocal rental board. Find houses, apartments, and rooms for rent directly from owners.",
+    url: "https://veedundo.com",
+    siteName: "VeedUndo",
+    locale: "en_IN",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "VeedUndo - Kerala Rental Board",
+    description: "Kerala's hyperlocal rental board. Find houses, apartments, and rooms for rent directly from owners.",
+  },
+  metadataBase: new URL("https://veedundo.com"),
 };
 
 // Script to set theme before paint (no flash)
