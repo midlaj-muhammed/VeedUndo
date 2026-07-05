@@ -1,16 +1,18 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import type { District, SubDistrict, ListingMode } from "@/lib/types";
-import { HOUSE_TYPE_LABELS, RENT_HOUSE_TYPES, SELL_HOUSE_TYPES } from "@/lib/types";
+import type { District, SubDistrict, ListingMode, PropertyCategory } from "@/lib/types";
+import { HOUSE_TYPE_LABELS, PROPERTY_CATEGORY_LABELS, CATEGORY_HOUSE_TYPES } from "@/lib/types";
 import { DropdownPortal, useDropdownPosition } from "@/components/DropdownPortal";
 import { motion } from "motion/react";
 
 export interface Filters {
   listingMode: string;
+  propertyCategory: string;
   districtId: string;
   subDistrictId: string;
   rentRange: string;
+  priceRange: string;
   houseType: string;
   posterType: string;
   search: string;
@@ -30,12 +32,22 @@ const RENT_RANGES = [
   { value: "20000-999999", label: "Above ₹20K" },
 ];
 
+const PRICE_RANGES = [
+  { value: "0-1000000", label: "Under ₹10L" },
+  { value: "1000000-2500000", label: "₹10L–25L" },
+  { value: "2500000-5000000", label: "₹25L–50L" },
+  { value: "5000000-10000000", label: "₹50L–1Cr" },
+  { value: "10000000-25000000", label: "₹1Cr–2.5Cr" },
+  { value: "25000000-999999999", label: "₹2.5Cr+" },
+];
+
 export default function BrowseFilters({ districts, filters, onChange }: Props) {
   const [subDistricts, setSubDistricts] = useState<SubDistrict[]>([]);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const district = useDropdownPosition();
   const sub = useDropdownPosition();
   const rent = useDropdownPosition();
+  const price = useDropdownPosition();
   const type = useDropdownPosition();
   const poster = useDropdownPosition();
   const sort = useDropdownPosition();
@@ -72,15 +84,16 @@ export default function BrowseFilters({ districts, filters, onChange }: Props) {
   }
 
   function clearAll() {
-    onChange({ listingMode: filters.listingMode, districtId: "", subDistrictId: "", rentRange: "", houseType: "", posterType: "", search: "", sort: "" });
+    onChange({ listingMode: filters.listingMode, propertyCategory: filters.propertyCategory, districtId: "", subDistrictId: "", rentRange: "", priceRange: "", houseType: "", posterType: "", search: "", sort: "" });
     closeAll();
   }
 
-  const activeCount = [filters.districtId, filters.subDistrictId, filters.rentRange, filters.houseType, filters.posterType, filters.search].filter(Boolean).length;
+  const activeCount = [filters.districtId, filters.subDistrictId, filters.rentRange, filters.priceRange, filters.houseType, filters.posterType, filters.search].filter(Boolean).length;
 
   const districtLabel = filters.districtId ? districts.find((d) => d.id === filters.districtId)?.name : null;
   const subLabel = filters.subDistrictId ? subDistricts.find((s) => s.id === filters.subDistrictId)?.name : null;
   const rentLabel = filters.rentRange ? RENT_RANGES.find((r) => r.value === filters.rentRange)?.label : null;
+  const priceLabel = filters.priceRange ? PRICE_RANGES.find((r) => r.value === filters.priceRange)?.label : null;
   const typeLabel = filters.houseType ? HOUSE_TYPE_LABELS[filters.houseType as keyof typeof HOUSE_TYPE_LABELS] : null;
   const posterLabel = filters.posterType === "owner" ? "Owner" : filters.posterType === "broker" ? "Broker" : null;
 
@@ -98,7 +111,7 @@ export default function BrowseFilters({ districts, filters, onChange }: Props) {
           <button
             key={value}
             onClick={() => {
-              const next = { ...filters, listingMode: value, houseType: "" };
+              const next = { ...filters, listingMode: value, propertyCategory: "", houseType: "" };
               onChange(next);
               closeAll();
             }}
@@ -116,6 +129,27 @@ export default function BrowseFilters({ districts, filters, onChange }: Props) {
               />
             )}
             <span className="relative z-10">{label}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Property category chips */}
+      <div className="flex gap-2 mb-4 flex-wrap">
+        {(["residential", "commercial", "land"] as PropertyCategory[]).map((cat) => (
+          <button
+            key={cat}
+            onClick={() => {
+              const next = { ...filters, propertyCategory: filters.propertyCategory === cat ? "" : cat, houseType: "" };
+              onChange(next);
+              closeAll();
+            }}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-all min-h-[36px] ${
+              filters.propertyCategory === cat
+                ? "bg-[var(--color-primary)] text-white shadow-sm"
+                : "bg-[var(--color-muted)] text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-border)]"
+            }`}
+          >
+            {PROPERTY_CATEGORY_LABELS[cat]}
           </button>
         ))}
       </div>
@@ -208,6 +242,26 @@ export default function BrowseFilters({ districts, filters, onChange }: Props) {
           )}
         </button>
 
+        {/* Price range chip — sell mode only */}
+        {filters.listingMode === "sell" && (
+          <button
+            ref={price.triggerRef}
+            onClick={() => openDropdown("price")}
+            className={`shrink-0 inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-medium transition-colors min-h-[40px] ${
+              filters.priceRange
+                ? "bg-[var(--color-primary)] text-white"
+                : "bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text)] hover:border-[var(--color-primary-light)]"
+            }`}
+          >
+            {priceLabel || "Price"}
+            {filters.priceRange && (
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            )}
+          </button>
+        )}
+
         {/* House type chip */}
         <button
           ref={type.triggerRef}
@@ -289,13 +343,29 @@ export default function BrowseFilters({ districts, filters, onChange }: Props) {
         ))}
       </DropdownPortal>
 
+      {/* Price range dropdown via portal */}
+      <DropdownPortal
+        pos={price.pos}
+        className={dropdownBase}
+      >
+        <button onClick={() => update("priceRange", "")} className="w-full text-left px-4 py-2.5 text-sm hover:bg-[var(--color-muted)] text-[var(--color-text-muted)]">Any Price</button>
+        {PRICE_RANGES.map((r) => (
+          <button key={r.value} onClick={() => update("priceRange", r.value)} className={`w-full text-left px-4 py-2.5 text-sm hover:bg-[var(--color-muted)] ${filters.priceRange === r.value ? "text-[var(--color-primary)] font-medium" : "text-[var(--color-text)]"}`}>{r.label}</button>
+        ))}
+      </DropdownPortal>
+
       {/* House type dropdown via portal */}
       <DropdownPortal
         pos={type.pos}
         className={dropdownBase}
       >
         <button onClick={() => update("houseType", "")} className="w-full text-left px-4 py-2.5 text-sm hover:bg-[var(--color-muted)] text-[var(--color-text-muted)]">Any Type</button>
-        {(filters.listingMode === "sell" ? SELL_HOUSE_TYPES : RENT_HOUSE_TYPES).map((k) => (
+        {(filters.propertyCategory
+          ? CATEGORY_HOUSE_TYPES[filters.propertyCategory as PropertyCategory] || []
+          : filters.listingMode === "sell"
+            ? Object.keys(HOUSE_TYPE_LABELS) as (keyof typeof HOUSE_TYPE_LABELS)[]
+            : Object.keys(HOUSE_TYPE_LABELS) as (keyof typeof HOUSE_TYPE_LABELS)[]
+        ).map((k) => (
           <button key={k} onClick={() => update("houseType", k)} className={`w-full text-left px-4 py-2.5 text-sm hover:bg-[var(--color-muted)] ${filters.houseType === k ? "text-[var(--color-primary)] font-medium" : "text-[var(--color-text)]"}`}>{HOUSE_TYPE_LABELS[k]}</button>
         ))}
       </DropdownPortal>

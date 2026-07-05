@@ -25,6 +25,7 @@ export interface Listing {
   poster_whatsapp: string | null;
   status: ListingStatus;
   listing_mode: ListingMode;
+  property_category: PropertyCategory;
   bedrooms: number | null;
   furnishing: Furnishing | null;
   area_sqft: number | null;
@@ -42,6 +43,20 @@ export interface ListingWithLocation extends Listing {
 export type ListingMode = "rent" | "sell";
 
 export type Furnishing = "unfurnished" | "semi_furnished" | "furnished";
+
+export type PropertyCategory = "residential" | "commercial" | "land";
+
+export const PROPERTY_CATEGORY_LABELS: Record<PropertyCategory, string> = {
+  residential: "Residential",
+  commercial: "Commercial",
+  land: "Land",
+};
+
+export const CATEGORY_HOUSE_TYPES: Record<PropertyCategory, HouseType[]> = {
+  residential: ["single_room", "pg_room", "1bhk", "2bhk", "3bhk", "4bhk", "apartment", "independent_house", "studio", "villa"],
+  commercial: ["apartment", "independent_house", "commercial"],
+  land: ["plot", "farm_house"],
+};
 
 export const FURNISHING_LABELS: Record<Furnishing, string> = {
   unfurnished: "Unfurnished",

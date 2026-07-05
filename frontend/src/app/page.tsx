@@ -15,7 +15,7 @@ export default function Home() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState("");
-  const [filters, setFilters] = useState({ listingMode: "", districtId: "", subDistrictId: "", rentRange: "", houseType: "", posterType: "", search: "", sort: "" });
+  const [filters, setFilters] = useState({ listingMode: "", propertyCategory: "", districtId: "", subDistrictId: "", rentRange: "", priceRange: "", houseType: "", posterType: "", search: "", sort: "" });
   const PAGE_SIZE = 20;
 
   useEffect(() => {
@@ -33,14 +33,16 @@ export default function Home() {
     const cutoffISO = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
     let query = supabase.from("listings").select("*, sub_districts!inner(*, districts!inner(*))").or(`status.eq.active,and(status.eq.rented,rented_at.gte.${cutoffISO})`);
     if (filters.listingMode) query = query.eq("listing_mode", filters.listingMode);
+    if (filters.propertyCategory) query = query.eq("property_category", filters.propertyCategory);
     if (filters.subDistrictId) query = query.eq("sub_district_id", filters.subDistrictId);
     else if (filters.districtId) query = query.eq("sub_districts.district_id", filters.districtId);
     if (filters.houseType) query = query.eq("house_type", filters.houseType);
     if (filters.posterType) query = query.eq("poster_type", filters.posterType);
     if (filters.rentRange) { const [min, max] = filters.rentRange.split("-").map(Number); query = query.gte("rent_max", min).lte("rent_min", max); }
+    if (filters.priceRange) { const [min, max] = filters.priceRange.split("-").map(Number); query = query.gte("price", min).lte("price", max); }
     if (filters.search) query = query.ilike("description", `%${filters.search}%`);
-    const sortCol = filters.sort === "price_asc" || filters.sort === "price_desc" ? "rent_min" : "created_at";
-    query = query.order(sortCol, { ascending: filters.sort === "price_asc" });
+    const sortCol = filters.sort === "price_asc" || filters.sort === "price_desc" ? "price" : "created_at";
+    query = query.order(sortCol, { ascending: filters.sort === "price_asc", nullsFirst: filters.sort.startsWith("price") ? false : undefined });
     query = query.range(offset, offset + PAGE_SIZE - 1);
     const { data, error: err } = await query;
     if (err) { setError("Failed to load listings."); setListings([]); }

@@ -11,4 +11,8 @@ ALTER TABLE listings ADD CONSTRAINT listings_furnishing_check CHECK (furnishing 
 -- 3. Area in square feet (integer, nullable — mainly for sell mode)
 ALTER TABLE listings ADD COLUMN IF NOT EXISTS area_sqft integer;
 
--- Done! All new columns are nullable, existing rows unaffected.
+-- 4. Property category (text, nullable — defaults to 'residential')
+ALTER TABLE listings ADD COLUMN IF NOT EXISTS property_category text NOT NULL DEFAULT 'residential';
+ALTER TABLE listings ADD CONSTRAINT listings_property_category_check CHECK (property_category IN ('residential', 'commercial', 'land'));
+
+-- Done! All new columns are nullable (except property_category which has a default), existing rows unaffected.

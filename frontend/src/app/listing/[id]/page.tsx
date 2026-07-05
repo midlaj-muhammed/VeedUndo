@@ -84,9 +84,20 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
     },
   };
 
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://veedundo.com" },
+      { "@type": "ListItem", position: 2, name: isSell ? "For Sale" : "For Rent", item: `https://veedundo.com/?listingMode=${isSell ? "sell" : "rent"}` },
+      { "@type": "ListItem", position: 3, name: `${houseType} in ${locationText}`, item: `https://veedundo.com/listing/${id}` },
+    ],
+  };
+
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
       <ListingDetailClient initialListing={listing as any} />
     </>
   );

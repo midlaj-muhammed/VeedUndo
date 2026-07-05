@@ -5,7 +5,7 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "motion/react";
 import { supabase } from "@/lib/supabase";
 import type { District, SubDistrict, HouseType, PosterType, ListingMode, Furnishing } from "@/lib/types";
-import { HOUSE_TYPE_LABELS, RENT_HOUSE_TYPES, SELL_HOUSE_TYPES, FURNISHING_LABELS } from "@/lib/types";
+import { HOUSE_TYPE_LABELS, RENT_HOUSE_TYPES, SELL_HOUSE_TYPES, FURNISHING_LABELS, CATEGORY_HOUSE_TYPES } from "@/lib/types";
 
 const POSTER_TYPES: { value: PosterType; label: string }[] = [
   { value: "owner", label: "Owner" },
@@ -236,9 +236,11 @@ export default function PostForm() {
       });
       if (!uploadRes.ok) throw new Error("Image upload failed");
       const { urls } = await uploadRes.json();
+      const propertyCategory = (Object.entries(CATEGORY_HOUSE_TYPES).find(([, types]) => types.includes(houseType))?.[0] || "residential") as "residential" | "commercial" | "land";
       const { error: insertError } = await supabase.from("listings").insert({
         sub_district_id: subDistrictId || null,
         listing_mode: listingMode,
+        property_category: propertyCategory,
         rent_min: listingMode === "rent" ? parseInt(rentMin) : 0,
         rent_max: listingMode === "rent" ? parseInt(rentMax) : 0,
         price: listingMode === "sell" ? parseInt(price) : null,
