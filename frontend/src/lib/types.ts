@@ -35,6 +35,9 @@ export interface Listing {
   built_up_sqft: number | null;
   floor_number: number | null;
   parking: string | null;
+  verified_owner: boolean;
+  flag_threshold: number;
+  quality_score: number;
   image_urls: string[];
   expires_at: string;
   renewed_at: string;
