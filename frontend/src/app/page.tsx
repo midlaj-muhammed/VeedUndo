@@ -96,14 +96,14 @@ export default function Home() {
       <header className="hero-gradient">
         <div className="max-w-5xl mx-auto px-6 pt-20 pb-24 sm:pt-28 sm:pb-32 lg:pt-36 lg:pb-40">
           <div className="max-w-3xl">
-            <p className="text-[11px] font-semibold tracking-[0.25em] uppercase text-[var(--color-primary)] mb-6">Kerala Rental Board</p>
+            <p className="text-[11px] font-semibold tracking-[0.25em] uppercase text-[var(--color-primary)] mb-6">Kerala Property Marketplace</p>
             <h1 className="text-5xl sm:text-6xl lg:text-[5.5rem] font-bold text-[var(--color-text)] mb-6 leading-[0.9] tracking-[-0.03em]">
               Find your next
               <br />
               <span style={{ fontFamily: "var(--font-serif)" }} className="italic font-normal leading-[1.05] text-[var(--color-primary)]">home.</span>
             </h1>
             <p className="text-lg sm:text-xl text-[var(--color-text-muted)] max-w-lg mb-10 leading-relaxed">
-              Browse houses, apartments, and rooms for rent across Kerala. Direct from owners.
+              Buy, sell, or rent properties across Kerala. Direct from owners and builders.
             </p>
             <div className="flex items-center gap-4">
               <Link href="/post" className="press-effect btn btn-primary text-[15px] px-7 py-3">

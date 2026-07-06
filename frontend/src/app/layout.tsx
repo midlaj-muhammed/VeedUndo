@@ -35,17 +35,17 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: {
-    default: "VeedUndo - Kerala Rental Board",
+    default: "VeedUndo - Kerala Property Marketplace",
     template: "%s | VeedUndo",
   },
   description:
-    "Kerala's hyperlocal rental board. Find houses, apartments, and rooms for rent directly from owners.",
+    "Kerala's complete property marketplace. Buy, sell, or rent houses, apartments, plots, and commercial spaces directly from owners.",
   icons: {
     icon: "/favicon.svg",
   },
   openGraph: {
-    title: "VeedUndo - Kerala Rental Board",
-    description: "Kerala's hyperlocal rental board. Find houses, apartments, and rooms for rent directly from owners.",
+    title: "VeedUndo - Kerala Property Marketplace",
+    description: "Kerala's complete property marketplace. Buy, sell, or rent houses, apartments, plots, and commercial spaces directly from owners.",
     url: "https://veedundo.com",
     siteName: "VeedUndo",
     locale: "en_IN",
@@ -53,8 +53,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "VeedUndo - Kerala Rental Board",
-    description: "Kerala's hyperlocal rental board. Find houses, apartments, and rooms for rent directly from owners.",
+    title: "VeedUndo - Kerala Property Marketplace",
+    description: "Kerala's complete property marketplace. Buy, sell, or rent houses, apartments, plots, and commercial spaces directly from owners.",
   },
   metadataBase: new URL("https://veedundo.com"),
 };
