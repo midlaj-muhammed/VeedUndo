@@ -78,7 +78,7 @@ export default memo(function ListingCard({ listing }: { listing: ListingWithLoca
     <Link href={`/listing/${listing.id}`} className={`card-base group block rounded-2xl overflow-hidden ${isUnavailable ? "opacity-70" : ""}`}>
       <div className="relative w-full h-56 overflow-hidden">
         {listing.image_urls?.[0] ? (
-          <Image src={listing.image_urls[0]} alt={imgAlt} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" className={`object-cover transition-transform duration-500 cubic-bezier(0.16, 1, 0.3, 1) ${isUnavailable ? "grayscale" : "group-hover:scale-105"}`} />
+          <Image src={listing.image_urls[0]} alt={imgAlt} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" className={`object-cover transition-transform duration-500 cubic-bezier(0.16, 1, 0.3, 1) card-img-scale ${isUnavailable ? "grayscale" : ""}`} />
         ) : (
           <div className="w-full h-full bg-[var(--color-muted)] flex items-center justify-center">
             <svg className="w-12 h-12 text-[var(--color-text-dim)]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3h.008v.008h-.008V10.5zm0 3h.008v.008h-.008V13.5zm0 3h.008v.008h-.008V16.5z" /></svg>
@@ -89,11 +89,6 @@ export default memo(function ListingCard({ listing }: { listing: ListingWithLoca
           <span className={`w-fit rounded-full px-3 py-1 text-xs font-semibold tracking-wide backdrop-blur-md ${isSell ? "bg-green-500/90 text-white" : "bg-[var(--color-primary)]/90 text-white"}`}>
             {LISTING_MODE_LABELS[listing.listing_mode || "rent"]}
           </span>
-          {listing.source === "scraped" && (
-            <span className="w-fit rounded-full px-2.5 py-0.5 text-[10px] font-semibold bg-amber-500/90 text-white backdrop-blur-md">
-              Scraped
-            </span>
-          )}
         </div>
         <div className="absolute top-3 right-3 flex gap-2">
           <SaveButton listingId={listing.id} />

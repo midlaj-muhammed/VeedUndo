@@ -133,8 +133,8 @@ export default function Home() {
         ) : listings.length === 0 ? (
           <div className="text-center py-16 bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)]">
             <svg className="w-16 h-16 mx-auto mb-4 text-[var(--color-text-dim)]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3h.008v.008h-.008V10.5zm0 3h.008v.008h-.008V13.5zm0 3h.008v.008h-.008V16.5z" /></svg>
-            <p className="text-lg font-medium mb-1">No listings found</p>
-            <p className="text-sm text-[var(--color-text-muted)] mb-4">Try different filters or be the first to post.</p>
+            <p className="text-lg font-medium mb-1">No listings here yet</p>
+            <p className="text-sm text-[var(--color-text-muted)] mb-4">Be the first to post a property in this area.</p>
             <Link href="/post" className="press-effect inline-block rounded-md bg-[var(--color-primary)] px-5 py-2.5 text-sm font-medium text-white hover:bg-[var(--color-primary-dark)] min-h-[44px]">Post a Listing</Link>
           </div>
         ) : (

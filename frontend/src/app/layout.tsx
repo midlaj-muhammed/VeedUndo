@@ -82,6 +82,7 @@ export default function RootLayout({
       <body className="min-h-dvh flex flex-col font-sans bg-[var(--color-bg)] text-[var(--color-text)] pb-20 sm:pb-0">
         <ThemeProvider>
           {children}
+          {/* Desktop footer */}
           <footer className="hidden sm:block border-t border-[var(--color-border)] bg-[var(--color-muted)] mt-auto">
             <div className="max-w-5xl mx-auto px-6 py-12">
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 mb-10">
@@ -116,6 +117,21 @@ export default function RootLayout({
                 <span>&copy; {new Date().getFullYear()} VeedUndo</span>
                 <span>Made for Kerala</span>
               </div>
+            </div>
+          </footer>
+          {/* Mobile footer — minimal */}
+          <footer className="sm:hidden border-t border-[var(--color-border)] bg-[var(--color-muted)] mt-auto safe-area-bottom">
+            <div className="px-6 py-6">
+              <div className="flex items-center gap-3 mb-3">
+                <Logo />
+              </div>
+              <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-[var(--color-text-muted)]">
+                <Link href="/about" className="hover:text-[var(--color-text)] transition-colors">About</Link>
+                <Link href="/contact" className="hover:text-[var(--color-text)] transition-colors">Contact</Link>
+                <Link href="/privacy" className="hover:text-[var(--color-text)] transition-colors">Privacy</Link>
+                <Link href="/terms" className="hover:text-[var(--color-text)] transition-colors">Terms</Link>
+              </div>
+              <p className="text-[10px] text-[var(--color-text-dim)] mt-3">&copy; {new Date().getFullYear()} VeedUndo</p>
             </div>
           </footer>
         </ThemeProvider>
