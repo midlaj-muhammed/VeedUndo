@@ -82,7 +82,7 @@ export default function Home() {
             "@type": "WebSite",
             name: "VeedUndo",
             url: "https://veedundo.com",
-            description: "Kerala's hyperlocal rental board. Find houses, apartments, and rooms for rent directly from owners.",
+            description: "Kerala's complete property marketplace. Buy, sell, or rent houses, apartments, plots, and commercial spaces directly from owners.",
             potentialAction: {
               "@type": "SearchAction",
               target: "https://veedundo.com/?q={search_term_string}",

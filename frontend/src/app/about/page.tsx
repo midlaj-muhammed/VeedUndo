@@ -3,7 +3,7 @@ import Navbar from "@/components/Navbar";
 
 export const metadata: Metadata = {
   title: "About - VeedUndo",
-  description: "Kerala's hyperlocal rental board. Find houses, apartments, and rooms for rent directly from owners.",
+  description: "Kerala's complete property marketplace. Buy, sell, or rent houses, apartments, plots, and commercial spaces directly from owners.",
 };
 
 export default function AboutPage() {
@@ -16,7 +16,7 @@ export default function AboutPage() {
         </h1>
         <div className="space-y-6 text-[var(--color-text-muted)] leading-relaxed">
           <p>
-            VeedUndo is Kerala&apos;s hyperlocal rental board. We help people find houses, apartments, and rooms for rent directly from owners — no brokers, no runaround.
+            VeedUndo is Kerala&apos;s complete property marketplace. We help people buy, sell, or rent houses, apartments, plots, and commercial spaces directly from owners — no brokers, no runaround.
           </p>
           <p>
             Post a listing in under 2 minutes. Browse rentals near you. Contact owners directly on WhatsApp or phone. It&apos;s that simple.

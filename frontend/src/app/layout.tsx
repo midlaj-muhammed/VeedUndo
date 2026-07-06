@@ -87,7 +87,7 @@ export default function RootLayout({
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 mb-10">
                 <div className="col-span-2 sm:col-span-1">
                   <Logo size="large" />
-                  <p className="text-sm text-[var(--color-text-muted)] mt-3 max-w-xs leading-relaxed">Kerala&apos;s hyperlocal rental board. Find your next home.</p>
+                  <p className="text-sm text-[var(--color-text-muted)] mt-3 max-w-xs leading-relaxed">Kerala&apos;s complete property marketplace. Buy, sell, or rent your next home.</p>
                 </div>
                 <div>
                   <h3 className="text-xs font-semibold tracking-[0.15em] uppercase text-[var(--color-text-dim)] mb-3">Explore</h3>
