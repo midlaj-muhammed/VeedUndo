@@ -35,7 +35,7 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: {
-    default: "VeedUndo - Kerala Property Marketplace",
+    default: "Buy, Sell & Rent Properties in Kerala | VeedUndo",
     template: "%s | VeedUndo",
   },
   description:
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
     icon: "/favicon.svg",
   },
   openGraph: {
-    title: "VeedUndo - Kerala Property Marketplace",
+    title: "Buy, Sell & Rent Properties in Kerala | VeedUndo",
     description: "Kerala's complete property marketplace. Buy, sell, or rent houses, apartments, plots, and commercial spaces directly from owners.",
     url: "https://veedundo.com",
     siteName: "VeedUndo",
@@ -53,7 +53,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "VeedUndo - Kerala Property Marketplace",
+    title: "Buy, Sell & Rent Properties in Kerala | VeedUndo",
     description: "Kerala's complete property marketplace. Buy, sell, or rent houses, apartments, plots, and commercial spaces directly from owners.",
   },
   metadataBase: new URL("https://veedundo.com"),

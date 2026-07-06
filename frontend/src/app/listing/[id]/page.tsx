@@ -73,6 +73,7 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
       "@type": "Offer",
       price: isSell ? listing.price : listing.rent_min,
       priceCurrency: "INR",
+      availability: listing.status === "active" ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
       ...(isSell ? {} : {
         priceSpecification: {
           "@type": "UnitPriceSpecification",
@@ -89,8 +90,8 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
     "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Home", item: "https://veedundo.com" },
-      { "@type": "ListItem", position: 2, name: isSell ? "For Sale" : "For Rent", item: `https://veedundo.com/?listingMode=${isSell ? "sell" : "rent"}` },
-      { "@type": "ListItem", position: 3, name: `${houseType} in ${locationText}`, item: `https://veedundo.com/listing/${id}` },
+      { "@type": "ListItem", position: 2, name: isSell ? "For Sale" : "For Rent" },
+      { "@type": "ListItem", position: 3, name: `${houseType} in ${locationText}` },
     ],
   };
 
